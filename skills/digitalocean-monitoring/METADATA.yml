@@ -1,0 +1,5 @@
+maintainer: Quinn Eckart's team
+backup_maintainer: pending-owner-assignment
+tier: 2
+declared_endpoints:
+  - https://insights.mcp.digitalocean.com/mcp

@@ -1,0 +1,54 @@
+[project]
+name = "digitalocean-grokbot-plugin"
+version = "1.0.0"
+description = "Dev tooling for the DigitalOcean (Internal) Cursor plugin (agent-plugins-aligned)."
+requires-python = ">=3.11"
+dependencies = [
+    "mdformat>=0.7.17",
+    "mdformat-gfm>=1.0.0",
+    "mdformat-frontmatter>=2.0.0",
+    "ruamel.yaml>=0.18.0",
+]
+
+[project.scripts]
+format-markdown = "tools.format_markdown:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tools"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9.0",
+    "pytest>=8.0.0",
+    "pyyaml>=6.0.0",
+]
+
+# Integration evals under skills/*/evals/ expect skill-tools from digitalocean/agent-skills.
+# Install inside agent-plugins (or with GHE access): uv sync there, then make evals.
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "skills"]
+pythonpath = ["."]
+markers = [
+    "integration: calls inference target and external judge APIs (needs MODEL_ACCESS_KEY)",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["tools", "scripts", "tests", "skills"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "PTH"]
+
+[tool.ruff.lint.per-file-ignores]
+"skills/**/evals/*.py" = ["E402"]
+"tools/format_markdown.py" = ["SIM108"]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true

@@ -1,0 +1,10 @@
+maintainer: Quinn Eckart's team
+backup_maintainer: pending-owner-assignment
+tier: 2
+declared_endpoints:
+  - https://droplets.mcp.digitalocean.com/mcp
+  - https://apps.mcp.digitalocean.com/mcp
+  - https://accounts.mcp.digitalocean.com/mcp
+  - https://databases.mcp.digitalocean.com/mcp
+  - https://networking.mcp.digitalocean.com/mcp
+  - https://insights.mcp.digitalocean.com/mcp

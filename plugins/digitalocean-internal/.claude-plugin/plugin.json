@@ -1,0 +1,19 @@
+{
+  "name": "digitalocean-internal",
+  "description": "Run Droplets, apps, databases, and DNS on DigitalOcean — seven hosted MCP connectors and eleven agent skills with Droplet approval tiers.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Quinn Eckart's team"
+  },
+  "keywords": [
+    "digitalocean",
+    "droplets",
+    "app-platform",
+    "databases",
+    "dns",
+    "networking",
+    "insights",
+    "mcp",
+    "oauth"
+  ]
+}

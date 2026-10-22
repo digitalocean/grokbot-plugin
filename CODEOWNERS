@@ -1,0 +1,6 @@
+# Placeholder for agent-plugins submission.
+# In digitalocean/agent-plugins, replace with:
+#   * @digitalocean/agent-plugins-maintainers @digitalocean/product-security
+# Dual human approval (maintainers AND ProdSec) is required there; CODEOWNERS alone is OR-gated.
+
+* @QuinnEckart
