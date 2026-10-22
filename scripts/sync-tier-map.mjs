@@ -3,7 +3,7 @@
  * Diff plugin approval tiers against upstream mcp-digitalocean annotation tables.
  *
  * Usage:
- *   node scripts/sync-tier-map.mjs [--policy policy/approval-tiers-droplets.json]
+ *   node scripts/sync-tier-map.mjs [--policy plugins/digitalocean-internal/policy/approval-tiers-droplets.json]
  *       [--upstream-url URL] [--fail-on-diff]
  *
  * Default upstream URL is the Droplets annotations test on main.
@@ -14,7 +14,10 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DEFAULT_POLICY = resolve(__dirname, "../policy/approval-tiers-droplets.json");
+const DEFAULT_POLICY = resolve(
+  __dirname,
+  "../plugins/digitalocean-internal/policy/approval-tiers-droplets.json"
+);
 const DEFAULT_UPSTREAM =
   "https://raw.githubusercontent.com/digitalocean-labs/mcp-digitalocean/main/pkg/registry/droplet/droplet_annotations_test.go";
 const REGION_UPSTREAM =
