@@ -1,0 +1,19 @@
+{
+  "name": "digitalocean-internal",
+  "owner": {
+    "name": "DigitalOcean",
+    "email": ""
+  },
+  "metadata": {
+    "description": "DigitalOcean plugin for Grok Bot: seven hosted MCP connectors and eleven agent skills with Droplet approval tiers.",
+    "version": "1.0.0",
+    "pluginRoot": "plugins"
+  },
+  "plugins": [
+    {
+      "name": "digitalocean-internal",
+      "source": "digitalocean-internal",
+      "description": "Run Droplets, apps, databases, and DNS on DigitalOcean"
+    }
+  ]
+}
