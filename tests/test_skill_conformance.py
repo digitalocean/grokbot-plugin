@@ -104,7 +104,7 @@ def test_cursor_plugin_manifest_public_id() -> None:
     manifest = json.loads((PLUGIN_DIR / ".cursor-plugin/plugin.json").read_text(encoding="utf-8"))
     assert manifest["name"] == "digitalocean"
     assert manifest["displayName"] == "DigitalOcean"
-    assert manifest["logo"] == "assets/logo.svg"
+    assert manifest["logo"] == "assets/logo.png"
     assert ".." not in manifest["logo"]
 
 

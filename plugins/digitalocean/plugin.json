@@ -7,5 +7,6 @@
     "email": ""
   },
   "license": "MIT",
+  "logo": "assets/logo.png",
   "keywords": ["digitalocean", "mcp", "cloud", "droplets", "databases", "dns"]
 }
