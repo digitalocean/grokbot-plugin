@@ -14,12 +14,15 @@ later.
 1. In Cursor, open **Dashboard → Plugins & MCPs**.
 2. Under **Team Marketplaces**, choose **Add Marketplace → Import from Repo**.
 3. Paste this repository URL: `https://github.com/QuinnEckart/digitalocean-grokbot-plugin`
-4. Add the **digitalocean-internal** plugin to the marketplace and set installation
-   mode (Default Off, Default On, or Required).
-5. Teammates install from **Customize** in the sidebar.
+4. Cursor reads [`.cursor-plugin/marketplace.json`](.cursor-plugin/marketplace.json) and
+   lists the **DigitalOcean (Internal)** container plugin automatically.
+5. Add the plugin to the marketplace and set installation mode (Default Off,
+   Default On, or Required).
+6. Teammates install from **Customize** in the sidebar.
 
-For local development, copy this folder to `~/.cursor/plugins/local/digitalocean-internal`
-and reload the window (see [Cursor plugins docs](https://cursor.com/docs/plugins)).
+For local development, copy `plugins/digitalocean-internal` to
+`~/.cursor/plugins/local/digitalocean-internal` and reload the window (see
+[Cursor plugins docs](https://cursor.com/docs/plugins)).
 
 ## MCP connectors
 
@@ -39,7 +42,9 @@ Per-service endpoints (not the router). OAuth on first use unless noted.
 **Apps**, and **Accounts** at install; connect **Databases**, **Networking**, and
 **Insights** the first time a skill needs them. No shared scoped token by default.
 
-Configuration lives in [`mcp.json`](mcp.json) at the plugin root (Cursor Plugin format).
+Configuration lives in
+[`plugins/digitalocean-internal/mcp.json`](plugins/digitalocean-internal/mcp.json)
+(Cursor Plugin format).
 
 ## Skills
 
@@ -61,7 +66,7 @@ Configuration lives in [`mcp.json`](mcp.json) at the plugin root (Cursor Plugin 
 
 Cursor does not show DigitalOcean `readOnly` / `destructive` hints in the tool
 UI. This plugin carries its own map for **all 43 Droplets tools** in
-[`policy/approval-tiers-droplets.json`](policy/approval-tiers-droplets.json).
+[`plugins/digitalocean-internal/policy/approval-tiers-droplets.json`](plugins/digitalocean-internal/policy/approval-tiers-droplets.json).
 
 | Tier | Behavior |
 | --- | --- |
@@ -104,12 +109,14 @@ tool names match the policy file.
 ## Repository layout
 
 ```text
-.cursor-plugin/plugin.json   # Cursor Plugin manifest
-mcp.json                      # Seven HTTP MCP servers
-assets/logo.svg
-policy/approval-tiers-droplets.json
+.cursor-plugin/marketplace.json              # Team marketplace manifest (lists plugins)
+plugins/digitalocean-internal/
+  .cursor-plugin/plugin.json                 # Container plugin manifest
+  mcp.json                                   # Seven HTTP MCP servers
+  assets/logo.svg
+  policy/approval-tiers-droplets.json
+  skills/*/SKILL.md                          # Eleven skills (auto-discovered)
 scripts/sync-tier-map.mjs
-skills/*/SKILL.md
 tests/
 ```
 
