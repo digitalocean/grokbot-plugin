@@ -1,0 +1,441 @@
+{
+  "version": "1.0.0",
+  "upstreamRepository": "digitalocean-labs/mcp-digitalocean",
+  "upstreamCommit": "8ce21db",
+  "upstreamAnnotationSource": "pkg/registry/droplet/droplet_annotations_test.go",
+  "regionListSource": "pkg/registry/common/region_tools.go",
+  "endpoint": "droplets",
+  "mcpServer": "digitalocean-droplets",
+  "tools": [
+    {
+      "tool": "droplet-list",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "droplet-get",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "droplet-action",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": "Reads one action's status"
+    },
+    {
+      "tool": "droplet-backup-policy",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "droplet-kernels",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "image-list",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "image-get",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "image-action-get",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "size-list",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": "Price source for Tier 4"
+    },
+    {
+      "tool": "region-list",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": "Defined in common/region_tools.go"
+    },
+    {
+      "tool": "rename-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "enable-ipv6-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": "Not reversible through these tools"
+    },
+    {
+      "tool": "enable-ipv6-droplets-tag",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 2,
+      "tierAction": "Confirm, list tagged Droplets",
+      "notes": "Bulk; preview required"
+    },
+    {
+      "tool": "enable-private-net-droplets-tag",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 2,
+      "tierAction": "Confirm, list tagged Droplets",
+      "notes": "Upstream rates single-Droplet version high but this one low"
+    },
+    {
+      "tool": "power-on-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "power-on-droplets-tag",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm, list tagged Droplets",
+      "notes": "Bulk"
+    },
+    {
+      "tool": "reboot-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": "Brief downtime"
+    },
+    {
+      "tool": "power-cycle-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": "Hard reset; brief downtime"
+    },
+    {
+      "tool": "shutdown-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": "Graceful. Bundled-plan Droplets keep billing while off"
+    },
+    {
+      "tool": "image-update",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": "Rename or describe image"
+    },
+    {
+      "tool": "droplet-delete",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": true,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": "Irreversible; check snapshots, volumes, reserved IPs, DNS first"
+    },
+    {
+      "tool": "rebuild-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": true,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": "Wipes disk"
+    },
+    {
+      "tool": "rebuild-droplet-by-slug",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": true,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": "Wipes disk"
+    },
+    {
+      "tool": "restore-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": true,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": "Overwrites current disk with a backup"
+    },
+    {
+      "tool": "image-delete",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": true,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": "Snapshot or backup gone for good"
+    },
+    {
+      "tool": "power-off-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": "Stricter than upstream: hard power-off risks data corruption"
+    },
+    {
+      "tool": "power-off-droplets-tag",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk, list tagged Droplets",
+      "notes": "Bulk outage"
+    },
+    {
+      "tool": "shutdown-droplets-tag",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk, list tagged Droplets",
+      "notes": "Bulk outage"
+    },
+    {
+      "tool": "power-cycle-droplets-tag",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk, list tagged Droplets",
+      "notes": "Bulk outage"
+    },
+    {
+      "tool": "reset-droplet-password",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": "Stricter than upstream: changes root credentials"
+    },
+    {
+      "tool": "change-kernel-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": "Stricter than upstream: can leave Droplet unbootable"
+    },
+    {
+      "tool": "droplet-enable-private-net",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": "Follows upstream high rating"
+    },
+    {
+      "tool": "disable-backups-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": "Stricter than upstream: removes data protection"
+    },
+    {
+      "tool": "disable-backups-droplets-tag",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk, list tagged Droplets",
+      "notes": "Stricter than upstream; bulk"
+    },
+    {
+      "tool": "droplet-create",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "high",
+      "proposedTier": 4,
+      "tierAction": "Price first, plus Tier 3 naming",
+      "notes": "Billing starts at creation"
+    },
+    {
+      "tool": "resize-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 4,
+      "tierAction": "Price first",
+      "notes": "If ResizeDisk is true, also Tier 3"
+    },
+    {
+      "tool": "enable-backups-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 4,
+      "tierAction": "Price first",
+      "notes": "Weekly 20% or daily 30% of Droplet price per month"
+    },
+    {
+      "tool": "enable-backups-droplets-tag",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 4,
+      "tierAction": "Price first, list tagged Droplets",
+      "notes": "Bulk recurring cost"
+    },
+    {
+      "tool": "snapshot-droplet",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 4,
+      "tierAction": "Price first",
+      "notes": "$0.06 per GB per month"
+    },
+    {
+      "tool": "snapshot-droplets-tag",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 4,
+      "tierAction": "Price first, list tagged Droplets",
+      "notes": "Bulk"
+    },
+    {
+      "tool": "image-create",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 4,
+      "tierAction": "Price first",
+      "notes": "Custom image storage"
+    },
+    {
+      "tool": "image-action-transfer",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 4,
+      "tierAction": "Price first",
+      "notes": "Copies image to another region"
+    },
+    {
+      "tool": "image-action-convert",
+      "endpoint": "digitalocean-droplets",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 4,
+      "tierAction": "Price first",
+      "notes": "Converts backup into snapshot"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "digitalocean-internal",
+  "version": "1.0.0",
+  "description": "Run Droplets, apps, databases, and DNS on DigitalOcean",
+  "author": {
+    "name": "Quinn Eckart's team"
+  },
+  "repository": "https://github.com/QuinnEckart/digitalocean-grokbot-plugin",
+  "license": "MIT",
+  "keywords": [
+    "digitalocean",
+    "droplets",
+    "app-platform",
+    "databases",
+    "dns",
+    "networking",
+    "insights",
+    "mcp",
+    "oauth"
+  ],
+  "logo": "assets/logo.svg",
+  "skills": "skills"
+}
