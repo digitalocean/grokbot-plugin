@@ -1,0 +1,390 @@
+{
+  "version": "1.0.0",
+  "upstreamRepository": "digitalocean-labs/mcp-digitalocean",
+  "upstreamCommit": "8ce21db",
+  "upstreamAnnotationSource": "pkg/registry/dbaas/dbaas_annotations_test.go",
+  "endpoint": "databases",
+  "mcpServer": "digitalocean-databases",
+  "tools": [
+    {
+      "tool": "db-cluster-create",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 4,
+      "tierAction": "Price first",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-create-topic",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-create-user",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-delete",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": true,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-delete-topic",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": true,
+      "upstreamRisk": "medium",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-delete-user",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": true,
+      "upstreamRisk": "medium",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-ca",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-firewall-rules",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-kafka-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-migration",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-mongodb-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-mysql-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-opensearch-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-postgresql-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-redis-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-sql-mode",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-topic",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-get-user",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-list",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-list-backups",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-list-options",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-list-topics",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-list-users",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-resize",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 4,
+      "tierAction": "Price first",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-set-sql-mode",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-start-online-migration",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-stop-online-migration",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-update-firewall-rules",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-update-kafka-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-update-mongodb-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-update-mysql-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-update-os-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-update-psql-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-update-redis-config",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-update-topic",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-update-user",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    },
+    {
+      "tool": "db-cluster-upgrade-major-version",
+      "endpoint": "digitalocean-databases",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": ""
+    }
+  ]
+}

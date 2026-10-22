@@ -9,7 +9,7 @@ description: >-
 
 Connector: **digitalocean-droplets** (`droplets.mcp.digitalocean.com`).
 
-1. Load **digitalocean-safety** and resolve the tool tier in
+1. Load **digitalocean-safety** and resolve the tool tier from the plugin
    `policy/approval-tiers-droplets.json` before every call.
 1. Read first: `droplet-list`, `droplet-get`, `size-list`, `region-list` as needed.
 1. For SSH keys, use **digitalocean-accounts** `key-list` when creating Droplets.
@@ -35,8 +35,6 @@ and DNS records that point at the Droplet. Name the resource by **name and ID**.
 For Tier 4, hand off pricing steps to **digitalocean-costs** or inline
 `size-list` output before confirm.
 
-## Upstream sync
-
-```bash
-node scripts/sync-tier-map.mjs --fail-on-diff
-```
+Maintainers sync tier metadata via `node scripts/sync-tier-map.mjs` (see
+[AGENTS.md](../../AGENTS.md)); that script is not shipped inside the plugin
+install.

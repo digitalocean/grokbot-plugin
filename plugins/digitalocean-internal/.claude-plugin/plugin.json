@@ -15,5 +15,6 @@
     "insights",
     "mcp",
     "oauth"
-  ]
+  ],
+  "mcpServers": "./mcp.json"
 }

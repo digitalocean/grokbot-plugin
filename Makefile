@@ -1,6 +1,6 @@
 .PHONY: lint lint-fix test evals classify
 
-MDFORMAT_PATHS ?= README.md CHANGELOG.md CONFORMANCE.md AGENTS.md skills plugins/digitalocean-internal/policy
+MDFORMAT_PATHS ?= README.md CHANGELOG.md CONFORMANCE.md AGENTS.md SECURITY-REVIEW.md RELEASE.md skills plugins/digitalocean-internal/policy
 
 PYTHON_PATHS ?= tools scripts tests skills
 
@@ -19,6 +19,10 @@ lint-fix:
 
 test:
 	uv run --group dev python -m pytest tests skills -v -m "not integration"
+	node --test tests/test_mcp_tier_policy.mjs
+
+tier-drift:
+	node scripts/sync-tier-map.mjs --fail-on-diff
 
 evals:
 	@echo "Run integration evals from digitalocean/agent-plugins after skill-tools is installed." >&2

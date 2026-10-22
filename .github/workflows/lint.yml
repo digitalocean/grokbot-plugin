@@ -6,6 +6,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch: {}
+  schedule:
+    - cron: "0 6 * * 1"
 
 permissions:
   contents: read
@@ -29,3 +31,6 @@ jobs:
 
       - name: make test
         run: make test
+
+      - name: Tier map drift check
+        run: make tier-drift
