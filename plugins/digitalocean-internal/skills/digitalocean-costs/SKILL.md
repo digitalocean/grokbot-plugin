@@ -33,6 +33,24 @@ for size/region pricing.
 - Summarize invoice line items; do not dump full PDFs into chat unless asked.
 - Redact account identifiers if the user is sharing a screen.
 
+## Inference & Agents (Serverless Inference)
+
+Apps that call **Serverless Inference** (for example
+`https://inference.do-ai.run/v1/chat/completions`) bill against **Inference & Agents**
+balance, separate from generic account balance in some views.
+
+Before deploy or when the user adds inference to an app, warn that:
+
+- **$0 balance with auto reload off** can block the account for inference; API
+  responses may show **`402 Payment Required`** and **`This account has been blocked`**
+  after an initial period of working calls.
+- Fix is **billing**, not redeploying the app: add credit or turn on **auto reload**
+  at [Account billing](https://cloud.digitalocean.com/account/billing) on the same
+  DigitalOcean team as the app.
+
+Use `balance-get` and billing history on **digitalocean-accounts** to summarize
+state; do not retry inference requests in a loop expecting a code fix.
+
 ## Triggers
 
 Balance, invoices, billing history, and "what will this cost" questions route here
