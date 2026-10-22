@@ -15,7 +15,7 @@
       "source": "digitalocean",
       "description": "Run Droplets, apps, databases, and DNS on DigitalOcean",
       "category": "cloud",
-      "logo": "assets/logo.svg"
+      "logo": "assets/logo.png"
     }
   ]
 }

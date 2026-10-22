@@ -87,7 +87,8 @@ make sync-plugin-skills   # after editing skills/
 make lint-fix && make lint && make test
 ```
 
-See [AGENTS.md](AGENTS.md), [CONFORMANCE.md](CONFORMANCE.md), and [SUBMISSION.md](SUBMISSION.md).
+See [AGENTS.md](AGENTS.md), [CONFORMANCE.md](CONFORMANCE.md), and [SUBMISSION.md](SUBMISSION.md)
+(marketplace logo: [`plugins/digitalocean/assets/logo.png`](plugins/digitalocean/assets/logo.png)).
 
 ## License
 
