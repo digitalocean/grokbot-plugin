@@ -46,12 +46,23 @@ test("tier 4 billable asks", () => {
   assert.match(d.user_message, /Tier 4/i);
 });
 
-test("unmapped write on insights is denied", () => {
+test("insights uptimecheck-create is tier 2 ask", () => {
   const d = evaluateMcpToolCall({
     pluginRoot: PLUGIN_ROOT,
     mcpServerName: "digitalocean-insights",
     toolName: "uptimecheck-create",
     toolInput: { name: "prod-check" },
+  });
+  assert.equal(d.permission, "ask");
+  assert.match(d.user_message, /Tier 2/i);
+});
+
+test("unmapped write on insights is denied", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean-insights",
+    toolName: "insights-future-write",
+    toolInput: {},
   });
   assert.equal(d.permission, "deny");
 });
@@ -77,7 +88,7 @@ test("policy load failure treats write as ask tier 3", () => {
   assert.match(d.user_message, /policy/i);
 });
 
-test("docs connector always allows", () => {
+test("docs-search allowed via read-only tier map", () => {
   const d = evaluateMcpToolCall({
     pluginRoot: PLUGIN_ROOT,
     mcpServerName: "digitalocean-docs",
@@ -85,6 +96,16 @@ test("docs connector always allows", () => {
     toolInput: { query: "firewall" },
   });
   assert.equal(d.permission, "allow");
+});
+
+test("unmapped docs tool is denied", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean-docs",
+    toolName: "docs-destroy-all",
+    toolInput: {},
+  });
+  assert.equal(d.permission, "deny");
 });
 
 test("accounts ssh key create is tier 3 ask", () => {
@@ -135,6 +156,8 @@ test("policy index loads all endpoint maps", () => {
   assert.ok(idx.byServer.has("digitalocean-databases"));
   assert.ok(idx.byServer.has("digitalocean-apps"));
   assert.ok(idx.byServer.has("digitalocean-droplets"));
+  assert.ok(idx.byServer.has("digitalocean-insights"));
+  assert.ok(idx.byServer.has("digitalocean-docs"));
 });
 
 test("bulk tag firewall change asks tier 2", () => {

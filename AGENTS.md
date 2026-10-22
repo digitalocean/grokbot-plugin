@@ -40,7 +40,7 @@ include hand-tuned overrides; other endpoints are generated from upstream
 `*_annotations_test.go` at commit `8ce21db` (see each file's `upstreamCommit`).
 
 ```bash
-# Regenerate accounts/networking/databases/apps maps from upstream (not droplets)
+# Regenerate generated maps from upstream (not droplets)
 node scripts/bootstrap-tier-maps.mjs
 
 # Drift check (CI + weekly schedule) — all maps including droplets

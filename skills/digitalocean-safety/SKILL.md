@@ -32,12 +32,15 @@ Endpoint maps shipped in v1:
 | `approval-tiers-networking.json` | digitalocean-networking |
 | `approval-tiers-databases.json`  | digitalocean-databases  |
 | `approval-tiers-apps.json`       | digitalocean-apps       |
+| `approval-tiers-insights.json`   | digitalocean-insights   |
+| `approval-tiers-docs.json`       | digitalocean-docs       |
 
 **Unmapped tools:** any MCP write tool not listed in a tier map is **Tier 3**
 (skill layer). The plugin hook **denies** unmapped writes (defense in depth).
 
-Insights and other endpoints without a map yet: unmapped writes are Tier 3 in
-skills and denied by the hook until a map lands.
+**Docs connector:** `approval-tiers-docs.json` lists every docs MCP tool as
+**Tier 1 / read-only** (upstream `docs_*_annotations_test.go` at `8ce21db`). The
+hook allows only mapped docs tools; there are no write tools in the map.
 
 ## Tiers
 
@@ -115,6 +118,16 @@ workspace). They mirror the shipped JSON maps.
 ### networking — Tier 4
 
 `byoip-prefix-create`, `lb-create`, `partner-attachment-create`, `reserved-ip-reserve`
+
+### insights — Tier 3
+
+`alert-policy-delete`, `insights-alert-rule-delete`,
+`insights-notification-channel-delete`, `uptimecheck-alert-delete`, `uptimecheck-delete`
+
+### docs — Tier 3 / Tier 4
+
+None (all tools are Tier 1 read-only: `docs-search`, `docs-get-page`,
+`docs-find-for-service`, `docs-get-quickstart`, `docs-troubleshoot`, `docs-get-related`).
 
 ## Stricter-than-upstream (Droplets)
 

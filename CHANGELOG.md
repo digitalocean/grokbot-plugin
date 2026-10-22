@@ -3,7 +3,7 @@
 ## Unreleased
 
 - MCP tier enforcement hooks (`failClosed`) for Cursor and Claude Code.
-- Tier maps for Accounts, Networking, Databases, and Apps; drift CI + weekly schedule.
+- Tier maps for Accounts, Networking, Databases, Apps, Insights, and Docs; drift CI + weekly schedule.
 - Security-hardened safety/connect skills, adversarial evals, SECURITY-REVIEW.md, RELEASE.md.
 
 ## 1.0.0 — 2026-10-22

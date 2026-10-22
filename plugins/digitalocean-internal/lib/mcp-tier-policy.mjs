@@ -142,14 +142,6 @@ export function evaluateMcpToolCall(input) {
     };
   }
 
-  if (mcpServerName === DOCS_SERVER) {
-    return {
-      permission: "allow",
-      user_message: "",
-      agent_message: "",
-    };
-  }
-
   if (policyIndex.loadError) {
     if (looksLikeReadTool(toolName)) {
       return { permission: "allow", user_message: "", agent_message: "" };
@@ -168,6 +160,14 @@ export function evaluateMcpToolCall(input) {
   const row = policyIndex.byTool.get(`${mcpServerName}::${toolName}`);
 
   if (!row) {
+    if (mcpServerName === DOCS_SERVER) {
+      return {
+        permission: "deny",
+        user_message: `Blocked: ${toolName} is not in the read-only docs tier map.`,
+        agent_message:
+          `Refusing ${mcpServerName}/${toolName}: docs connector tools must be listed in approval-tiers-docs.json.`,
+      };
+    }
     if (looksLikeReadTool(toolName)) {
       return { permission: "allow", user_message: "", agent_message: "" };
     }

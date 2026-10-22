@@ -69,7 +69,7 @@ Configuration lives in
 Cursor does not show DigitalOcean `readOnly` / `destructive` hints in the tool
 UI. Tier maps ship for **Droplets, Accounts, Networking, Databases, and Apps**
 under [`plugins/digitalocean-internal/policy/`](plugins/digitalocean-internal/policy/)
-(Insights/docs: unmapped writes are denied by the hook and Tier 3 in skills).
+(all seven connectors; **docs** is read-only Tier 1 only).
 
 | Tier | Behavior                                      |
 | ---- | --------------------------------------------- |
@@ -87,8 +87,9 @@ Skills enforce tiers when hooks are unavailable; the plugin also ships
 1. Enable **Settings → Agents → Third-Party Imports** if testing Claude-format hooks in Cursor.
 1. Trigger a Tier 3 tool (for example `droplet-delete`) via the agent — expect an
    **ask** prompt naming targets from `tool_input`.
-1. Trigger an unmapped insights write (for example `uptimecheck-create`) — expect
-   **deny** from the hook.
+1. Trigger `uptimecheck-create` — expect **ask** (Tier 2). Trigger an unmapped
+   tool name — expect **deny**.
+1. Trigger `docs-search` — expect **allow** (Tier 1 read-only map).
 1. **Caveat:** some Cursor **2.4.x** builds ignore hook `ask` while `deny` still
    works; confirm on the Grok Bot client version. See [SECURITY-REVIEW.md](SECURITY-REVIEW.md).
 

@@ -37,6 +37,12 @@ const POLICY_SOURCES = {
   "approval-tiers-apps.json": {
     upstreamUrl: `${BASE}/pkg/registry/apps/apps_annotations_test.go`,
   },
+  "approval-tiers-insights.json": {
+    upstreamUrl: `${BASE}/pkg/registry/insights/insights_annotations_test.go`,
+  },
+  "approval-tiers-docs.json": {
+    upstreamUrl: `${BASE}/pkg/registry/docs/docs_annotations_test.go`,
+  },
 };
 
 function parseArgs(argv) {

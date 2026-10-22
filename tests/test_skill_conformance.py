@@ -69,3 +69,27 @@ def test_mcp_json_unchanged_endpoints() -> None:
     mcp = json.loads((ROOT / "plugins/digitalocean-internal/mcp.json").read_text())
     urls = {s["url"] for s in mcp["mcpServers"].values()}
     assert urls == MCP_URLS
+
+
+def test_docs_policy_is_read_only_tier1() -> None:
+    import json
+
+    policy_path = ROOT / "plugins/digitalocean-internal/policy/approval-tiers-docs.json"
+    policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    assert policy["mcpServer"] == "digitalocean-docs"
+    assert policy["tools"], "docs policy must list every docs tool"
+    for row in policy["tools"]:
+        assert row["upstreamReadOnly"] is True
+        assert row["proposedTier"] == 1
+        assert row["upstreamDestructive"] is False
+
+
+def test_insights_policy_covers_monitoring_writes() -> None:
+    import json
+
+    policy_path = ROOT / "plugins/digitalocean-internal/policy/approval-tiers-insights.json"
+    policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    names = {row["tool"] for row in policy["tools"]}
+    assert "uptimecheck-create" in names
+    assert "alert-policy-create" in names
+    assert "uptimecheck-delete" in names

@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
- * Generate approval-tiers-*.json for accounts, networking, databases, apps from upstream.
+ * Generate approval-tiers-*.json for accounts, networking, databases, apps,
+ * insights, and docs from upstream.
  * Droplets is hand-maintained; this script does not overwrite it.
+ * Accounts `key-create` Tier 3 override is re-applied after generation.
  */
 
 import { writeFileSync } from "node:fs";
@@ -42,6 +44,18 @@ const ENDPOINTS = [
     endpoint: "apps",
     mcpServer: "digitalocean-apps",
     annotationSource: "pkg/registry/apps/apps_annotations_test.go",
+  },
+  {
+    file: "approval-tiers-insights.json",
+    endpoint: "insights",
+    mcpServer: "digitalocean-insights",
+    annotationSource: "pkg/registry/insights/insights_annotations_test.go",
+  },
+  {
+    file: "approval-tiers-docs.json",
+    endpoint: "docs",
+    mcpServer: "digitalocean-docs",
+    annotationSource: "pkg/registry/docs/docs_annotations_test.go",
   },
 ];
 
@@ -105,6 +119,15 @@ async function main() {
     const upstreamTools = parseExpectedAnnotations(goSource);
     const policy = buildPolicy(def, upstreamTools);
     const outPath = resolve(POLICY_DIR, def.file);
+    if (def.file === "approval-tiers-accounts.json") {
+      const keyCreate = policy.tools.find((t) => t.tool === "key-create");
+      if (keyCreate) {
+        keyCreate.proposedTier = 3;
+        keyCreate.tierAction = "Named high-risk";
+        keyCreate.notes =
+          "Stricter than upstream: new SSH key grants access to account Droplets";
+      }
+    }
     writeFileSync(outPath, `${JSON.stringify(policy, null, 2)}\n`);
     console.log(`Wrote ${outPath} (${policy.tools.length} tools)`);
   }
