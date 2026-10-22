@@ -35,6 +35,5 @@ and DNS records that point at the Droplet. Name the resource by **name and ID**.
 For Tier 4, hand off pricing steps to **digitalocean-costs** or inline
 `size-list` output before confirm.
 
-Maintainers sync tier metadata via `node scripts/sync-tier-map.mjs` (see
-[AGENTS.md](../../AGENTS.md)); that script is not shipped inside the plugin
-install.
+Maintainers sync tier metadata in the plugin repository with
+`node scripts/sync-tier-map.mjs` (not shipped inside the plugin install).

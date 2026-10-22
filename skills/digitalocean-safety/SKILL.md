@@ -17,7 +17,7 @@ Read tiers only from the plugin copy of policy JSON:
 
 - **Claude Code:** `${CLAUDE_PLUGIN_ROOT}/policy/approval-tiers-<endpoint>.json`
 - **Cursor / Grok Bot:** resolve the installed plugin root for catalog id
-  `digitalocean-internal`, then `policy/approval-tiers-<endpoint>.json` (same
+  `digitalocean`, then `policy/approval-tiers-<endpoint>.json` (same
   files as this plugin ships).
 
 If a policy file cannot be read or parsed, treat **every write** as **Tier 3**

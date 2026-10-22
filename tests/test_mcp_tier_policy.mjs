@@ -7,10 +7,10 @@ import {
   normalizeHookInput,
   parseClaudePluginMcpTool,
   resolvePluginRoot,
-} from "../plugins/digitalocean-internal/lib/mcp-tier-policy.mjs";
+} from "../plugins/digitalocean/lib/mcp-tier-policy.mjs";
 
 const PLUGIN_ROOT = resolvePluginRoot(
-  join(import.meta.dirname, "../plugins/digitalocean-internal")
+  join(import.meta.dirname, "../plugins/digitalocean")
 );
 
 test("tier 1 read allows droplet-list", () => {
@@ -151,12 +151,16 @@ test("networking firewall delete is tier 3 ask", () => {
 
 test("parse Claude scoped MCP tool names", () => {
   const parsed = parseClaudePluginMcpTool(
-    "mcp__plugin_digitalocean-internal_digitalocean-droplets__droplet-delete"
+    "mcp__plugin_digitalocean_digitalocean-droplets__droplet-delete"
   );
   assert.deepEqual(parsed, {
     mcpServerName: "digitalocean-droplets",
     toolName: "droplet-delete",
   });
+  const legacy = parseClaudePluginMcpTool(
+    "mcp__plugin_digitalocean-internal_digitalocean-droplets__droplet-list"
+  );
+  assert.equal(legacy?.toolName, "droplet-list");
 });
 
 test("normalize Cursor beforeMCPExecution payload", () => {

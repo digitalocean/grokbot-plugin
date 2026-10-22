@@ -14,5 +14,5 @@ See `skill-triggers.jsonl` — prompt in, expected skill (and optional tool) out
 
 ## Approval checks
 
-For Droplets Tier 2–4 tools, confirm the agent follows `plugins/digitalocean-internal/policy/approval-tiers-droplets.json`
+For Droplets Tier 2–4 tools, confirm the agent follows `plugins/digitalocean/policy/approval-tiers-droplets.json`
 and **digitalocean-safety** before calling MCP write tools.

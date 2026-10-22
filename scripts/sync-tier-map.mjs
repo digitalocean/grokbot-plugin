@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const POLICY_DIR = resolve(
   __dirname,
-  "../plugins/digitalocean-internal/policy"
+  "../plugins/digitalocean/policy"
 );
 const UPSTREAM_COMMIT = "8ce21db";
 const BASE =
