@@ -1,6 +1,10 @@
-# Placeholder for agent-plugins submission.
-# In digitalocean/agent-plugins, replace with:
-#   * @digitalocean/agent-plugins-maintainers @digitalocean/product-security
-# Dual human approval (maintainers AND ProdSec) is required there; CODEOWNERS alone is OR-gated.
+# Grok Bot repo (plugin id remains digitalocean-internal for catalog compatibility).
+#
+# Upstream target in digitalocean/agent-plugins:
+#   Package directory: plugins/digitalocean/
+#   Package id: digitalocean
+#   Maintainer: 
+#   Backup: 
+#   Required in GHE: @digitalocean/agent-plugins-maintainers AND @digitalocean/product-security
 
 * @QuinnEckart

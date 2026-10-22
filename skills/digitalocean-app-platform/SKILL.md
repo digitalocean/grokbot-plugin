@@ -54,12 +54,12 @@ Give the user these steps (same DO team as the connectors):
 
 1. Open [Create an app](https://cloud.digitalocean.com/apps/new) while signed in to
    that DigitalOcean account.
-2. Choose **GitHub** as the source.
-3. On GitHub, **install or authorize** the DigitalOcean GitHub app and **grant access
+1. Choose **GitHub** as the source.
+1. On GitHub, **install or authorize** the DigitalOcean GitHub app and **grant access
    to the repo** (only that repo is fine).
-4. Stop once the repo appears in DigitalOcean’s repo picker — **do not** finish
+1. Stop once the repo appears in DigitalOcean’s repo picker — **do not** finish
    creating an app in the UI unless they want to.
-5. Ask them to tell you when the repo shows up; **retry the same** `apps-create-app-from-spec`
+1. Ask them to tell you when the repo shows up; **retry the same** `apps-create-app-from-spec`
    or `apps-update` call with the unchanged spec.
 
 If the error persists, confirm the spec’s `owner/repo` matches the repo they granted

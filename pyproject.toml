@@ -1,7 +1,7 @@
 [project]
 name = "digitalocean-grokbot-plugin"
 version = "1.0.0"
-description = "Dev tooling for the DigitalOcean (Internal) Cursor plugin (agent-plugins-aligned)."
+description = "Dev tooling for the DigitalOcean Grok Bot Cursor plugin (agent-plugins-aligned)."
 requires-python = ">=3.11"
 dependencies = [
     "mdformat>=0.7.17",

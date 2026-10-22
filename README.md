@@ -1,8 +1,8 @@
-# DigitalOcean (Internal)
+# DigitalOcean
 
 **Run Droplets, apps, databases, and DNS on DigitalOcean.**
 
-Internal Cursor plugin for Quinn's team (v1). Bundles seven DigitalOcean hosted
+Internal Cursor plugin for Grok Bot (v1). Bundles seven DigitalOcean hosted
 MCP connectors and eleven agent skills with an explicit Droplets approval tier
 map. Designed to stay clean enough to upstream as an official DigitalOcean plugin
 later.
@@ -15,7 +15,7 @@ later.
 1. Under **Team Marketplaces**, choose **Add Marketplace → Import from Repo**.
 1. Paste this repository URL: `https://github.com/QuinnEckart/digitalocean-grokbot-plugin`
 1. Cursor reads [`.cursor-plugin/marketplace.json`](.cursor-plugin/marketplace.json) and
-   lists the **DigitalOcean (Internal)** container plugin automatically.
+   lists the **DigitalOcean** plugin (`digitalocean-internal` catalog id) automatically.
 1. Add the plugin to the marketplace and set installation mode (Default Off,
    Default On, or Required).
 1. Teammates install from **Customize** in the sidebar.

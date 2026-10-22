@@ -1,6 +1,7 @@
 # Agent / developer guide (Grok Bot plugin)
 
-This repository hosts the **DigitalOcean (Internal)** Cursor plugin for Grok Bot. Skill content
+This repository hosts the **DigitalOcean** Cursor plugin for Grok Bot (catalog id
+`digitalocean-internal`). Skill content
 follows the layout and conventions of
 [digitalocean/agent-plugins](https://github.internal.digitalocean.com/digitalocean/agent-plugins)
 so the package can move into that monorepo later.
@@ -11,7 +12,8 @@ so the package can move into that monorepo later.
   `METADATA.yml`).
 - **`plugins/digitalocean-internal/`** — container plugin: `mcp.json`, policy, assets, and
   **`skills/<name>`** symlinks → `../../../skills/<name>`.
-- **`.cursor-plugin/marketplace.json`** — Grok Bot team marketplace catalog (unchanged contract).
+- **`.cursor-plugin/marketplace.json`** — Grok Bot team marketplace catalog (id `digitalocean-internal`;
+  display name **DigitalOcean**). Upstream agent-plugins package id will be **`digitalocean`**.
 - **`.claude-plugin/marketplace.json`** — Claude Code catalog mirror for agent-plugins drop-in.
 
 MCP OAuth endpoints live in `plugins/digitalocean-internal/mcp.json` (seven connectors; do not
