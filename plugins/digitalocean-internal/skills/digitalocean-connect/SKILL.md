@@ -45,6 +45,12 @@ In Cursor: **Customize → MCP** — enable each server and complete OAuth when 
 | 403 | Insufficient scopes | Recommend scope bundles for the skill; offer PAT with correct scopes |
 | 429 | Rate limit (5000/hr, 250/min) | Back off; honor `Retry-After`; reduce polling |
 
+**App Platform + private GitHub** is separate from MCP OAuth. A signed-in
+**digitalocean-apps** connector does not install the DigitalOcean GitHub app or grant
+repo access. If `apps-create-app-from-spec` / `apps-update` return
+`GitHub user not authenticated`, use **digitalocean-app-platform** (user steps at
+[Create an app](https://cloud.digitalocean.com/apps/new)), then retry the deploy call.
+
 Public OAuth clients use **1-hour** access tokens and **single-use** refresh tokens.
 Persist the latest refresh token if configuring a custom client (not default here).
 
