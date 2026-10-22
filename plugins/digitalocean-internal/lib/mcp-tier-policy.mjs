@@ -4,17 +4,26 @@ import { join } from "node:path";
 const DOCS_SERVER = "digitalocean-docs";
 const SERVER_PREFIX = "digitalocean-";
 
-function looksLikeReadTool(toolName) {
-  if (toolName === "region-list" || toolName.startsWith("docs-")) {
-    return true;
+/** Only unmapped tool allowed without a policy row (shared region helper in upstream). */
+function isRegionListWithoutMap(toolName) {
+  return toolName === "region-list";
+}
+
+function denyUnmapped(mcpServerName, toolName) {
+  if (mcpServerName === DOCS_SERVER) {
+    return {
+      permission: "deny",
+      user_message: `Blocked: ${toolName} is not in the read-only docs tier map.`,
+      agent_message:
+        `Refusing ${mcpServerName}/${toolName}: docs connector tools must be listed in approval-tiers-docs.json.`,
+    };
   }
-  if (toolName.endsWith("-list")) {
-    return true;
-  }
-  if (toolName.includes("-get") || toolName.startsWith("get-")) {
-    return true;
-  }
-  return false;
+  return {
+    permission: "deny",
+    user_message: `Blocked: ${toolName} is not in the DigitalOcean tier policy map.`,
+    agent_message:
+      `Refusing ${mcpServerName}/${toolName}: unmapped tools are denied by plugin hook policy.`,
+  };
 }
 
 /** @typedef {{ permission: 'allow'|'ask'|'deny', user_message: string, agent_message: string, tier?: number }} PolicyDecision */
@@ -143,14 +152,14 @@ export function evaluateMcpToolCall(input) {
   }
 
   if (policyIndex.loadError) {
-    if (looksLikeReadTool(toolName)) {
+    if (isRegionListWithoutMap(toolName)) {
       return { permission: "allow", user_message: "", agent_message: "" };
     }
     return {
       permission: "ask",
       tier: 3,
       user_message:
-        "DigitalOcean policy files could not be loaded; treating this write as Tier 3.",
+        "DigitalOcean policy files could not be loaded; treating this MCP call as Tier 3.",
       agent_message:
         `Policy load failed (${policyIndex.loadError}). ` +
         `Do not run ${toolName} until tiers are confirmed with the user.`,
@@ -160,23 +169,10 @@ export function evaluateMcpToolCall(input) {
   const row = policyIndex.byTool.get(`${mcpServerName}::${toolName}`);
 
   if (!row) {
-    if (mcpServerName === DOCS_SERVER) {
-      return {
-        permission: "deny",
-        user_message: `Blocked: ${toolName} is not in the read-only docs tier map.`,
-        agent_message:
-          `Refusing ${mcpServerName}/${toolName}: docs connector tools must be listed in approval-tiers-docs.json.`,
-      };
-    }
-    if (looksLikeReadTool(toolName)) {
+    if (isRegionListWithoutMap(toolName)) {
       return { permission: "allow", user_message: "", agent_message: "" };
     }
-    return {
-      permission: "deny",
-      user_message: `Blocked: ${toolName} is not in the DigitalOcean tier policy map.`,
-      agent_message:
-        `Refusing ${mcpServerName}/${toolName}: unmapped write tools are denied by plugin hook policy.`,
-    };
+    return denyUnmapped(mcpServerName, toolName);
   }
 
   const tier = row.proposedTier ?? 1;

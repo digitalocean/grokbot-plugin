@@ -108,6 +108,26 @@ test("unmapped docs tool is denied", () => {
   assert.equal(d.permission, "deny");
 });
 
+test("unmapped docs-submit-feedback is denied despite docs- prefix", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean-docs",
+    toolName: "docs-submit-feedback",
+    toolInput: { message: "hi" },
+  });
+  assert.equal(d.permission, "deny");
+});
+
+test("unmapped foo-get-and-reset is denied despite -get in name", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean-droplets",
+    toolName: "foo-get-and-reset",
+    toolInput: {},
+  });
+  assert.equal(d.permission, "deny");
+});
+
 test("accounts ssh key create is tier 3 ask", () => {
   const d = evaluateMcpToolCall({
     pluginRoot: PLUGIN_ROOT,
