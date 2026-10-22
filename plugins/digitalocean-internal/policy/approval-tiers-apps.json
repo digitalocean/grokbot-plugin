@@ -1,0 +1,80 @@
+{
+  "version": "1.0.0",
+  "upstreamRepository": "digitalocean-labs/mcp-digitalocean",
+  "upstreamCommit": "8ce21db",
+  "upstreamAnnotationSource": "pkg/registry/apps/apps_annotations_test.go",
+  "endpoint": "apps",
+  "mcpServer": "digitalocean-apps",
+  "tools": [
+    {
+      "tool": "apps-create-app-from-spec",
+      "endpoint": "digitalocean-apps",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 4,
+      "tierAction": "Price first",
+      "notes": ""
+    },
+    {
+      "tool": "apps-delete",
+      "endpoint": "digitalocean-apps",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": true,
+      "upstreamRisk": "high",
+      "proposedTier": 3,
+      "tierAction": "Named high-risk",
+      "notes": ""
+    },
+    {
+      "tool": "apps-get-deployment-status",
+      "endpoint": "digitalocean-apps",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "apps-get-info",
+      "endpoint": "digitalocean-apps",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "apps-get-logs",
+      "endpoint": "digitalocean-apps",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "apps-list",
+      "endpoint": "digitalocean-apps",
+      "upstreamReadOnly": true,
+      "upstreamDestructive": false,
+      "upstreamRisk": "low",
+      "proposedTier": 1,
+      "tierAction": "Runs freely",
+      "notes": ""
+    },
+    {
+      "tool": "apps-update",
+      "endpoint": "digitalocean-apps",
+      "upstreamReadOnly": false,
+      "upstreamDestructive": false,
+      "upstreamRisk": "medium",
+      "proposedTier": 2,
+      "tierAction": "Confirm",
+      "notes": ""
+    }
+  ]
+}

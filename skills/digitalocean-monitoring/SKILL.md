@@ -9,7 +9,8 @@ description: >-
 
 Connector: **digitalocean-insights** — connect on first use.
 
-1. Load **digitalocean-safety**.
+1. Load **digitalocean-safety** and resolve tiers in
+   `policy/approval-tiers-insights.json` before every call.
 1. Read: `uptimecheck-list`, `alert-policy-list`,
    `insights-notification-channel-list`, and query tools as needed.
 

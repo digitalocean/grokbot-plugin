@@ -30,7 +30,25 @@ change URLs without product sign-off).
 uv sync --group dev
 make lint-fix && make lint
 make test
+make tier-drift   # compare all policy/*.json to upstream mcp-digitalocean annotations
 ```
+
+### Approval tier maps
+
+Policy JSON lives under `plugins/digitalocean-internal/policy/`. Droplets tiers
+include hand-tuned overrides; other endpoints are generated from upstream
+`*_annotations_test.go` at commit `8ce21db` (see each file's `upstreamCommit`).
+
+```bash
+# Regenerate generated maps from upstream (not droplets)
+node scripts/bootstrap-tier-maps.mjs
+
+# Drift check (CI + weekly schedule) — all maps including droplets
+node scripts/sync-tier-map.mjs --fail-on-diff
+```
+
+Hook logic: `plugins/digitalocean-internal/lib/mcp-tier-policy.mjs` (unit tests in
+`tests/test_mcp_tier_policy.mjs`).
 
 Integration evals (internal network + `MODEL_ACCESS_KEY` + `skill-tools` from
 `digitalocean/agent-skills`) run in the agent-plugins monorepo after these skill trees are

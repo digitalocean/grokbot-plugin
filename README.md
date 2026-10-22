@@ -38,9 +38,11 @@ Per-service endpoints (not the router). OAuth on first use unless noted.
 | digitalocean-insights   | `https://insights.mcp.digitalocean.com/mcp`        |
 | digitalocean-docs       | `https://docs.mcp.digitalocean.com/mcp` (no token) |
 
-**Sign-in model (v1):** separate OAuth grant per connector. Connect **Droplets**,
-**Apps**, and **Accounts** at install; connect **Databases**, **Networking**, and
-**Insights** the first time a skill needs them. No shared scoped token by default.
+**Sign-in model (v1):** separate OAuth grant per connector. Connect **Droplets**
+at install; connect **Apps**, **Accounts**, **Databases**, **Networking**, and
+**Insights** on first use (**digitalocean-connect**). `mcp.json` has no
+install-time connect flag — lazy connect is skill-enforced only. Never paste
+PATs in chat.
 
 Configuration lives in
 [`plugins/digitalocean-internal/mcp.json`](plugins/digitalocean-internal/mcp.json)
@@ -65,8 +67,9 @@ Configuration lives in
 ## Approval tiers
 
 Cursor does not show DigitalOcean `readOnly` / `destructive` hints in the tool
-UI. This plugin carries its own map for **all 43 Droplets tools** in
-[`plugins/digitalocean-internal/policy/approval-tiers-droplets.json`](plugins/digitalocean-internal/policy/approval-tiers-droplets.json).
+UI. Tier maps ship for **Droplets, Accounts, Networking, Databases, and Apps**
+under [`plugins/digitalocean-internal/policy/`](plugins/digitalocean-internal/policy/)
+(all seven connectors; **docs** is read-only Tier 1 only).
 
 | Tier | Behavior                                      |
 | ---- | --------------------------------------------- |
@@ -75,17 +78,31 @@ UI. This plugin carries its own map for **all 43 Droplets tools** in
 | 3    | Named high-risk (destructive / outage / bulk) |
 | 4    | Show price before billable actions            |
 
-Skills enforce tiers in instructions until platform-level enforcement exists.
+Skills enforce tiers when hooks are unavailable; the plugin also ships
+`hooks/hooks.json` (`beforeMCPExecution` + Claude `PreToolUse`, `failClosed: true`).
+
+### Verify hook enforcement (Cursor / Claude Code)
+
+1. Install the plugin from the team marketplace (or copy to `~/.cursor/plugins/local/`).
+1. Enable **Settings → Agents → Third-Party Imports** if testing Claude-format hooks in Cursor.
+1. Trigger a Tier 3 tool (for example `droplet-delete`) via the agent — expect an
+   **ask** prompt naming targets from `tool_input`.
+1. Trigger `uptimecheck-create` — expect **ask** (Tier 2). Trigger an unmapped
+   tool name — expect **deny**.
+1. Trigger `docs-search` — expect **allow** (Tier 1 read-only map).
+1. **Caveat:** some Cursor **2.4.x** builds ignore hook `ask` while `deny` still
+   works; confirm on the Grok Bot client version. See [SECURITY-REVIEW.md](SECURITY-REVIEW.md).
 
 ### Sync with upstream
 
-Compare policy metadata to
-[`droplet_annotations_test.go`](https://github.com/digitalocean-labs/mcp-digitalocean/blob/main/pkg/registry/droplet/droplet_annotations_test.go):
-
 ```bash
-node scripts/sync-tier-map.mjs
-node scripts/sync-tier-map.mjs --fail-on-diff   # CI-friendly
+make tier-drift
 ```
+
+Compares every `approval-tiers-*.json` file to
+[`mcp-digitalocean`](https://github.com/digitalocean-labs/mcp-digitalocean) `*_annotations_test.go`
+at the pinned commit in each policy file (currently `8ce21db`). CI runs this on
+every push and weekly (Mondays 06:00 UTC).
 
 ## Test plan
 
@@ -117,9 +134,13 @@ plugins/digitalocean-internal/
   .claude-plugin/plugin.json                 # Claude manifest (paired)
   mcp.json                                   # Seven HTTP MCP servers
   assets/logo.svg
-  policy/approval-tiers-droplets.json
+  policy/approval-tiers-*.json
+  hooks/hooks.json                           # MCP tier enforcement (failClosed)
+  lib/ + scripts/before-mcp-hook.mjs
+  .mcp.json                                  # Claude Code MCP discovery (copy of mcp.json)
   skills/<name>/ → ../../../skills/<name>    # Symlinks for marketplace install
 scripts/sync-tier-map.mjs
+scripts/bootstrap-tier-maps.mjs
 scripts/classify_skill.py                   # Advisory tier helper (from agent-plugins)
 tests/
 CONFORMANCE.md                              # agent-plugins requirement matrix
@@ -127,6 +148,12 @@ CONFORMANCE.md                              # agent-plugins requirement matrix
 
 Local lint (Markdown + unit tests): `uv sync --group dev && make lint && make test`. See
 [AGENTS.md](AGENTS.md) and [CONFORMANCE.md](CONFORMANCE.md).
+
+### Marketplace pinning (recommended)
+
+Pin the team marketplace to a **release tag or commit SHA**, not floating `main`,
+after security review. Tags: see [RELEASE.md](RELEASE.md). Dashboard change is
+required on the marketplace admin side (not controllable from this repo).
 
 ## v1.1 (deferred)
 

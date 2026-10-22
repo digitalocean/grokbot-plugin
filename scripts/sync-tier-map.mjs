@@ -3,30 +3,52 @@
  * Diff plugin approval tiers against upstream mcp-digitalocean annotation tables.
  *
  * Usage:
- *   node scripts/sync-tier-map.mjs [--policy plugins/digitalocean-internal/policy/approval-tiers-droplets.json]
- *       [--upstream-url URL] [--fail-on-diff]
- *
- * Default upstream URL is the Droplets annotations test on main.
+ *   node scripts/sync-tier-map.mjs [--fail-on-diff]
+ *   node scripts/sync-tier-map.mjs --policy path/to/one.json [--upstream-url URL] [--fail-on-diff]
  */
 
-import { readFileSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { readFileSync, readdirSync } from "node:fs";
+import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DEFAULT_POLICY = resolve(
+const POLICY_DIR = resolve(
   __dirname,
-  "../plugins/digitalocean-internal/policy/approval-tiers-droplets.json"
+  "../plugins/digitalocean-internal/policy"
 );
-const DEFAULT_UPSTREAM =
-  "https://raw.githubusercontent.com/digitalocean-labs/mcp-digitalocean/main/pkg/registry/droplet/droplet_annotations_test.go";
-const REGION_UPSTREAM =
-  "https://raw.githubusercontent.com/digitalocean-labs/mcp-digitalocean/main/pkg/registry/common/region_tools.go";
+const UPSTREAM_COMMIT = "8ce21db";
+const BASE =
+  `https://raw.githubusercontent.com/digitalocean-labs/mcp-digitalocean/${UPSTREAM_COMMIT}`;
+
+const POLICY_SOURCES = {
+  "approval-tiers-droplets.json": {
+    upstreamUrl: `${BASE}/pkg/registry/droplet/droplet_annotations_test.go`,
+    regionUrl: `${BASE}/pkg/registry/common/region_tools.go`,
+  },
+  "approval-tiers-accounts.json": {
+    upstreamUrl: `${BASE}/pkg/registry/account/account_annotations_test.go`,
+  },
+  "approval-tiers-networking.json": {
+    upstreamUrl: `${BASE}/pkg/registry/networking/networking_annotations_test.go`,
+  },
+  "approval-tiers-databases.json": {
+    upstreamUrl: `${BASE}/pkg/registry/dbaas/dbaas_annotations_test.go`,
+  },
+  "approval-tiers-apps.json": {
+    upstreamUrl: `${BASE}/pkg/registry/apps/apps_annotations_test.go`,
+  },
+  "approval-tiers-insights.json": {
+    upstreamUrl: `${BASE}/pkg/registry/insights/insights_annotations_test.go`,
+  },
+  "approval-tiers-docs.json": {
+    upstreamUrl: `${BASE}/pkg/registry/docs/docs_annotations_test.go`,
+  },
+};
 
 function parseArgs(argv) {
   const opts = {
-    policy: DEFAULT_POLICY,
-    upstreamUrl: DEFAULT_UPSTREAM,
+    policy: null,
+    upstreamUrl: null,
     failOnDiff: false,
   };
   for (let i = 2; i < argv.length; i++) {
@@ -39,7 +61,7 @@ function parseArgs(argv) {
   return opts;
 }
 
-/** Parse Go expectedAnnotations map rows from droplet_annotations_test.go */
+/** Parse Go expectedAnnotations map rows from *_annotations_test.go */
 function parseExpectedAnnotations(goSource) {
   const tools = {};
   const rowRe =
@@ -75,7 +97,7 @@ function loadPolicy(path) {
   for (const row of raw.tools) {
     byTool.set(row.tool, row);
   }
-  return { meta: raw, byTool };
+  return { meta: raw, byTool, path };
 }
 
 function compare(policy, upstreamTools, hasRegionList) {
@@ -147,29 +169,69 @@ function compare(policy, upstreamTools, hasRegionList) {
   return issues;
 }
 
-async function main() {
-  const opts = parseArgs(process.argv);
-  const policy = loadPolicy(opts.policy);
-  const [goSource, regionSource] = await Promise.all([
-    fetchText(opts.upstreamUrl),
-    fetchText(REGION_UPSTREAM),
-  ]);
-  const upstreamTools = parseExpectedAnnotations(goSource);
-  const hasRegionList = regionListInUpstream(regionSource);
-  const issues = compare(policy, upstreamTools, hasRegionList);
+async function checkOnePolicy(policyPath, upstreamUrlOverride, regionUrl) {
+  const policy = loadPolicy(policyPath);
+  const basename = policyPath.split("/").pop();
+  const source = POLICY_SOURCES[basename];
+  const upstreamUrl = upstreamUrlOverride ?? source?.upstreamUrl;
+  if (!upstreamUrl) {
+    throw new Error(`No upstream URL configured for ${basename}`);
+  }
 
-  const summary = {
-    policyFile: opts.policy,
-    upstreamUrl: opts.upstreamUrl,
+  const goSource = await fetchText(upstreamUrl);
+  const upstreamTools = parseExpectedAnnotations(goSource);
+  let hasRegionList = false;
+  if (regionUrl || source?.regionUrl) {
+    const regionSource = await fetchText(regionUrl ?? source.regionUrl);
+    hasRegionList = regionListInUpstream(regionSource);
+  }
+
+  const issues = compare(policy, upstreamTools, hasRegionList);
+  return {
+    policyFile: policyPath,
+    upstreamUrl,
     upstreamToolCount: Object.keys(upstreamTools).length,
     policyToolCount: policy.byTool.size,
     issueCount: issues.length,
     issues,
   };
+}
 
-  console.log(JSON.stringify(summary, null, 2));
+async function main() {
+  const opts = parseArgs(process.argv);
+  const policyPaths = opts.policy
+    ? [opts.policy]
+    : readdirSync(POLICY_DIR)
+        .filter((f) => f.startsWith("approval-tiers-") && f.endsWith(".json"))
+        .sort()
+        .map((f) => join(POLICY_DIR, f));
 
-  if (opts.failOnDiff && issues.length > 0) {
+  const summaries = [];
+  let totalIssues = 0;
+
+  for (const policyPath of policyPaths) {
+    const summary = await checkOnePolicy(
+      policyPath,
+      opts.policy ? opts.upstreamUrl : null,
+      null
+    );
+    summaries.push(summary);
+    totalIssues += summary.issueCount;
+    console.log(JSON.stringify(summary, null, 2));
+  }
+
+  console.log(
+    JSON.stringify(
+      {
+        policiesChecked: summaries.length,
+        totalIssueCount: totalIssues,
+      },
+      null,
+      2
+    )
+  );
+
+  if (opts.failOnDiff && totalIssues > 0) {
     process.exit(1);
   }
 }
