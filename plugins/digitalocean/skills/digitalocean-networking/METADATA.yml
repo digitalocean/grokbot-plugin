@@ -1,0 +1,5 @@
+maintainer: 
+backup_maintainer: 
+tier: 2
+declared_endpoints:
+  - https://networking.mcp.digitalocean.com/mcp

@@ -2,9 +2,14 @@
 
 ## Unreleased
 
+## 1.1.0
+
+- Public marketplace layout: plugin id `digitalocean`, path `plugins/digitalocean/`.
+- Copied plugin skills (no `..` symlinks); `scripts/sync-plugin-skills.mjs`.
+- Agent Plugins root `plugin.json` + SUBMISSION.md checklist.
 - MCP tier enforcement hooks (`failClosed`) for Cursor and Claude Code.
-- Tier maps for Accounts, Networking, Databases, Apps, Insights, and Docs; drift CI + weekly schedule.
-- Security-hardened safety/connect skills, adversarial evals, SECURITY-REVIEW.md, RELEASE.md.
+- Tier maps for all connectors including Insights and Docs; drift CI + weekly schedule.
+- Security-hardened skills, adversarial evals, SECURITY-REVIEW.md.
 
 ## 1.0.0 — 2026-10-22
 

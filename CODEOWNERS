@@ -1,10 +1,2 @@
-# Grok Bot repo (plugin id remains digitalocean-internal for catalog compatibility).
-#
-# Upstream target in digitalocean/agent-plugins:
-#   Package directory: plugins/digitalocean/
-#   Package id: digitalocean
-#   Maintainer: 
-#   Backup: 
-#   Required in GHE: @digitalocean/agent-plugins-maintainers AND @digitalocean/product-security
-
-* @QuinnEckart
+# DigitalOcean Cursor plugin
+* @digitalocean/marketplace-eng

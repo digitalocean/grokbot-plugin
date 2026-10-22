@@ -1,6 +1,6 @@
 .PHONY: lint lint-fix test evals classify
 
-MDFORMAT_PATHS ?= README.md CHANGELOG.md CONFORMANCE.md AGENTS.md SECURITY-REVIEW.md RELEASE.md skills plugins/digitalocean-internal/policy
+MDFORMAT_PATHS ?= README.md CHANGELOG.md CONFORMANCE.md AGENTS.md SECURITY-REVIEW.md RELEASE.md SUBMISSION.md skills plugins/digitalocean/policy
 
 PYTHON_PATHS ?= tools scripts tests skills
 
@@ -18,8 +18,12 @@ lint-fix:
 	uv run ruff check --fix $(PYTHON_PATHS)
 
 test:
+	node scripts/sync-plugin-skills.mjs --check
 	uv run --group dev python -m pytest tests skills -v -m "not integration"
 	node --test tests/test_mcp_tier_policy.mjs
+
+sync-plugin-skills:
+	node scripts/sync-plugin-skills.mjs
 
 tier-drift:
 	node scripts/sync-tier-map.mjs --fail-on-diff

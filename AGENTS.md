@@ -1,69 +1,38 @@
-# Agent / developer guide (Grok Bot plugin)
+# Agent / developer guide
 
-This repository hosts the **DigitalOcean** Cursor plugin for Grok Bot (catalog id
-`digitalocean-internal`). Skill content
-follows the layout and conventions of
-[digitalocean/agent-plugins](https://github.internal.digitalocean.com/digitalocean/agent-plugins)
-so the package can move into that monorepo later.
+Repository for the **DigitalOcean** Cursor plugin (`digitalocean`). Canonical skill trees
+follow [Agent Plugins](https://agent-plugins.org/) layout for portability.
 
 ## Layout
 
 - **`skills/<name>/`** — canonical skill trees (`SKILL.md`, optional `references/`, `evals/`,
   `METADATA.yml`).
-- **`plugins/digitalocean-internal/`** — container plugin: `mcp.json`, policy, assets, and
-  **`skills/<name>`** symlinks → `../../../skills/<name>`.
-- **`.cursor-plugin/marketplace.json`** — Grok Bot team marketplace catalog (id `digitalocean-internal`;
-  display name **DigitalOcean**). Upstream agent-plugins package id will be **`digitalocean`**.
-- **`.claude-plugin/marketplace.json`** — Claude Code catalog mirror for agent-plugins drop-in.
+- **`plugins/digitalocean/`** — shippable plugin: `mcp.json`, policy, hooks, assets, and
+  **`skills/<name>/`** copies (run `make sync-plugin-skills` after editing canonical skills).
+- **`.cursor-plugin/marketplace.json`** — multi-plugin catalog for Git import / marketplace.
 
-MCP OAuth endpoints live in `plugins/digitalocean-internal/mcp.json` (seven connectors; do not
+MCP OAuth endpoints live in `plugins/digitalocean/mcp.json` (seven connectors; do not
 change URLs without product sign-off).
 
 ## Prerequisites
 
 - Python 3.11+
 - [uv](https://docs.astral.sh/uv/)
+- Node.js 20+ (tier drift + hook tests)
 
 ## Commands
 
 ```bash
 uv sync --group dev
+make sync-plugin-skills   # skills/ → plugins/digitalocean/skills/
 make lint-fix && make lint
 make test
-make tier-drift   # compare all policy/*.json to upstream mcp-digitalocean annotations
+make tier-drift
 ```
 
-### Approval tier maps
+Integration evals (network + `MODEL_ACCESS_KEY` + `skill-tools`) run in a CI environment
+that provides those dependencies. Eval sources live under `skills/*/evals/`.
 
-Policy JSON lives under `plugins/digitalocean-internal/policy/`. Droplets tiers
-include hand-tuned overrides; other endpoints are generated from upstream
-`*_annotations_test.go` at commit `8ce21db` (see each file's `upstreamCommit`).
+Hook logic: `plugins/digitalocean/lib/mcp-tier-policy.mjs` (`tests/test_mcp_tier_policy.mjs`).
 
-```bash
-# Regenerate generated maps from upstream (not droplets)
-node scripts/bootstrap-tier-maps.mjs
-
-# Drift check (CI + weekly schedule) — all maps including droplets
-node scripts/sync-tier-map.mjs --fail-on-diff
-```
-
-Hook logic: `plugins/digitalocean-internal/lib/mcp-tier-policy.mjs` (unit tests in
-`tests/test_mcp_tier_policy.mjs`).
-
-Integration evals (internal network + `MODEL_ACCESS_KEY` + `skill-tools` from
-`digitalocean/agent-skills`) run in the agent-plugins monorepo after these skill trees are
-imported. Eval sources live under `skills/*/evals/` here for drop-in.
-
-Advisory tier comment helper (same script as agent-plugins):
-
-```bash
-uv run python scripts/classify_skill.py --all
-```
-
-SkillSpector (when installed on PATH):
-
-```bash
-scripts/skillspector_ci.sh digitalocean-safety
-```
-
-See [CONFORMANCE.md](CONFORMANCE.md) for the full agent-plugins requirement matrix.
+See [CONFORMANCE.md](CONFORMANCE.md) and [SUBMISSION.md](SUBMISSION.md).

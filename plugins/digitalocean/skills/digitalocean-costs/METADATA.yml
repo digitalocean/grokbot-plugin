@@ -1,0 +1,6 @@
+maintainer: 
+backup_maintainer: 
+tier: 2
+declared_endpoints:
+  - https://accounts.mcp.digitalocean.com/mcp
+  - https://droplets.mcp.digitalocean.com/mcp

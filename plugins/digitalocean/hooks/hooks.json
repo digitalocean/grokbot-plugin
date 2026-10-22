@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeMCPExecution": [
+      {
+        "command": "node ./scripts/before-mcp-hook.mjs",
+        "timeout": 15,
+        "failClosed": true
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "node ./scripts/before-mcp-hook.mjs",
+        "timeout": 15,
+        "failClosed": true,
+        "matcher": "mcp__plugin_digitalocean(?:-internal)?_digitalocean-.*"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "mcp__plugin_digitalocean(?:-internal)?_digitalocean-.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/before-mcp-hook.mjs\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

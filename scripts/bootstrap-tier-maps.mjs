@@ -12,10 +12,10 @@ import { fileURLToPath } from "node:url";
 import {
   defaultProposedTier,
   tierActionFor,
-} from "../plugins/digitalocean-internal/lib/tier-map-defaults.mjs";
+} from "../plugins/digitalocean/lib/tier-map-defaults.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const POLICY_DIR = resolve(__dirname, "../plugins/digitalocean-internal/policy");
+const POLICY_DIR = resolve(__dirname, "../plugins/digitalocean/policy");
 const UPSTREAM_COMMIT = "8ce21db";
 const BASE =
   `https://raw.githubusercontent.com/digitalocean-labs/mcp-digitalocean/${UPSTREAM_COMMIT}`;

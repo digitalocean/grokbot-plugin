@@ -10,7 +10,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / "skills"
-PLUGIN_SKILLS = ROOT / "plugins/digitalocean-internal/skills"
+PLUGIN_DIR = ROOT / "plugins/digitalocean"
+PLUGIN_SKILLS = PLUGIN_DIR / "skills"
 MCP_URLS = {
     "https://droplets.mcp.digitalocean.com/mcp",
     "https://apps.mcp.digitalocean.com/mcp",
@@ -56,17 +57,19 @@ def test_metadata_present(name: str) -> None:
 
 
 @pytest.mark.parametrize("name", _skill_names())
-def test_plugin_skill_symlink(name: str) -> None:
-    link = PLUGIN_SKILLS / name
-    assert link.is_symlink(), f"expected symlink at {link}"
-    target = (link.parent / link.readlink()).resolve()
-    assert target == (SKILLS / name).resolve()
+def test_plugin_skill_is_copy_not_symlink(name: str) -> None:
+    dest = PLUGIN_SKILLS / name
+    assert dest.is_dir(), f"missing plugin skill dir {dest}"
+    assert not dest.is_symlink(), f"plugin skill must be a copy, not symlink: {dest}"
+    canonical = (SKILLS / name / "SKILL.md").read_text(encoding="utf-8")
+    bundled = (dest / "SKILL.md").read_text(encoding="utf-8")
+    assert canonical == bundled
 
 
 def test_mcp_json_unchanged_endpoints() -> None:
     import json
 
-    mcp = json.loads((ROOT / "plugins/digitalocean-internal/mcp.json").read_text())
+    mcp = json.loads((PLUGIN_DIR / "mcp.json").read_text())
     urls = {s["url"] for s in mcp["mcpServers"].values()}
     assert urls == MCP_URLS
 
@@ -74,7 +77,7 @@ def test_mcp_json_unchanged_endpoints() -> None:
 def test_docs_policy_is_read_only_tier1() -> None:
     import json
 
-    policy_path = ROOT / "plugins/digitalocean-internal/policy/approval-tiers-docs.json"
+    policy_path = PLUGIN_DIR / "policy/approval-tiers-docs.json"
     policy = json.loads(policy_path.read_text(encoding="utf-8"))
     assert policy["mcpServer"] == "digitalocean-docs"
     assert policy["tools"], "docs policy must list every docs tool"
@@ -87,9 +90,33 @@ def test_docs_policy_is_read_only_tier1() -> None:
 def test_insights_policy_covers_monitoring_writes() -> None:
     import json
 
-    policy_path = ROOT / "plugins/digitalocean-internal/policy/approval-tiers-insights.json"
+    policy_path = PLUGIN_DIR / "policy/approval-tiers-insights.json"
     policy = json.loads(policy_path.read_text(encoding="utf-8"))
     names = {row["tool"] for row in policy["tools"]}
     assert "uptimecheck-create" in names
     assert "alert-policy-create" in names
     assert "uptimecheck-delete" in names
+
+
+def test_cursor_plugin_manifest_public_id() -> None:
+    import json
+
+    manifest = json.loads((PLUGIN_DIR / ".cursor-plugin/plugin.json").read_text(encoding="utf-8"))
+    assert manifest["name"] == "digitalocean"
+    assert manifest["displayName"] == "DigitalOcean"
+    assert manifest["logo"] == "assets/logo.svg"
+    assert ".." not in manifest["logo"]
+
+
+def test_marketplace_manifest_unique_names() -> None:
+    import json
+
+    market = json.loads((ROOT / ".cursor-plugin/marketplace.json").read_text())
+    names = [p["name"] for p in market["plugins"]]
+    assert len(names) == len(set(names))
+    assert market["name"] == "digitalocean"
+    assert names == ["digitalocean"]
+    for entry in market["plugins"]:
+        for key, value in entry.items():
+            if isinstance(value, str) and ".." in value:
+                pytest.fail(f"parent path in marketplace entry {key}: {value}")
