@@ -104,6 +104,49 @@ def test_cursor_plugin_manifest_public_id() -> None:
     assert ".." not in manifest["logo"]
 
 
+def test_agent_plugin_root_manifest_conformance() -> None:
+    import json
+
+    # Agent Plugins manifest schema (additionalProperties: false) allows only:
+    allowed = {
+        "$schema",
+        "name",
+        "version",
+        "description",
+        "author",
+        "homepage",
+        "repository",
+        "license",
+        "keywords",
+        "extensions",
+    }
+    manifest = json.loads((PLUGIN_DIR / "plugin.json").read_text(encoding="utf-8"))
+    assert manifest["$schema"] == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+    assert manifest["name"] == "digitalocean"
+    unexpected = set(manifest) - allowed
+    assert not unexpected, f"disallowed Agent Plugin manifest keys: {sorted(unexpected)}"
+
+
+def test_mcp_json_declares_streamable_http_transport() -> None:
+    import json
+
+    mcp = json.loads((PLUGIN_DIR / "mcp.json").read_text(encoding="utf-8"))
+    server = mcp["mcpServers"]["digitalocean"]
+    assert server["type"] == "streamable-http"
+    assert server["url"] == DO_MCP_URL
+    # streamableHttpServer schema: additionalProperties false, only type/url/headers
+    assert set(server) <= {"type", "url", "headers"}
+
+
+def test_hooks_json_uses_plugin_format() -> None:
+    import json
+
+    hooks = json.loads((PLUGIN_DIR / "hooks/hooks.json").read_text(encoding="utf-8"))
+    # Plugin hook format is { "hooks": { <event>: [...] } } with no top-level version.
+    assert "version" not in hooks
+    assert "beforeMCPExecution" in hooks["hooks"]
+
+
 def test_marketplace_manifest_unique_names() -> None:
     import json
 
