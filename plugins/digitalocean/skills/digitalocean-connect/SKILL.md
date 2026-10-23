@@ -1,65 +1,67 @@
 ---
 name: digitalocean-connect
 description: >-
-  Connect DigitalOcean MCP endpoints, choose OAuth or a scoped token, and fix
+  Connect the DigitalOcean MCP server, choose OAuth or a scoped token, and fix
   401, 403, and 429 errors. Use for "connect DigitalOcean", "DO auth error",
   "token", or "permission denied".
 ---
-# Connect DigitalOcean MCP endpoints
+# Connect DigitalOcean MCP
 
-This plugin uses **per-service** hosted MCP endpoints (not the router at
-`mcp.digitalocean.com`), so each connector exposes named tools for approvals.
+This plugin ships a **single hosted MCP server** — **DigitalOcean MCP** at
+`https://mcp.digitalocean.com/mcp`. It fronts every first-party DigitalOcean
+service, so you connect **once** and reach all of them.
+
+DigitalOcean MCP exposes three meta-tools (a discovery-to-run flow):
+
+- `find_tools` — natural-language search that returns candidate tools by their
+  qualified `service/tool` name.
+- `retrieve_schema` — full input/output schema for one qualified tool name.
+- `invoke_tool` — runs a tool by its qualified name with matching `arguments`.
+
+Approval tiers still apply: the plugin hook unwraps the `invoke_tool` target
+(for example `droplets/droplet-delete`) and enforces the tier maps.
 
 ## Default auth (v1)
 
-- **OAuth** on first use — one grant **per connector** (grants are not shared).
+- **OAuth** on first use — a single browser sign-in for DigitalOcean MCP. No
+  per-service grants and no long-lived credentials stored in config.
 - **Never ask for or accept a Personal Access Token (PAT) or API token in chat.**
   If the user pastes a token, tell them to **revoke it immediately** in the
   DigitalOcean control panel and authenticate through **Customize → MCP** OAuth
-  for the connector instead.
-- Configure optional PATs only in the MCP server settings UI or local MCP config
-  (`mcp.json` / Cursor MCP settings), never in prompts, skills output, or
-  committed files.
+  instead.
+- Configure an optional PAT only in the MCP server settings UI or local MCP
+  config (`mcp.json` / Cursor MCP settings) as an `Authorization: Bearer` header,
+  never in prompts, skills output, or committed files.
 - **Database connection strings** (URI, password, CA material): never echo them,
   never write them to workspace files unless the user explicitly asks for a
   local copy in a named file.
 
-## Which connectors to connect when
+## Connect workflow
 
-| Connector               | URL                                           | When to connect            |
-| ----------------------- | --------------------------------------------- | -------------------------- |
-| digitalocean-droplets   | `https://droplets.mcp.digitalocean.com/mcp`   | At install                 |
-| digitalocean-apps       | `https://apps.mcp.digitalocean.com/mcp`       | First App Platform task    |
-| digitalocean-accounts   | `https://accounts.mcp.digitalocean.com/mcp`   | First account/SSH key task |
-| digitalocean-databases  | `https://databases.mcp.digitalocean.com/mcp`  | First database task        |
-| digitalocean-networking | `https://networking.mcp.digitalocean.com/mcp` | First DNS/network task     |
-| digitalocean-insights   | `https://insights.mcp.digitalocean.com/mcp`   | First monitoring task      |
-| digitalocean-docs       | `https://docs.mcp.digitalocean.com/mcp`       | No sign-in                 |
+DigitalOcean MCP is a single server, so there is nothing to connect per service.
 
-The plugin manifest (`mcp.json`) does not expose a per-connector “connect at
-install” flag — **lazy connect is enforced in skills** (table above). Cursor
-still prompts OAuth when a connector is first enabled in **Customize → MCP**.
+1. In Cursor: **Customize → MCP** — enable the **digitalocean** server and
+   complete OAuth when prompted.
+1. Confirm the connection with a read-only discovery call (`find_tools`) or a
+   Tier 1 read (for example `invoke_tool` → `droplets/droplet-list`) before any
+   write.
+1. The same OAuth grant covers accounts, droplets, apps, databases, networking,
+   insights, docs, and the other services it fronts.
 
-In Cursor: **Customize → MCP** — enable each server and complete OAuth when prompted.
-
-## Lazy-connect workflow
-
-1. Tell the user which connector the task needs and why.
-1. Ask them to enable/sign in to that MCP server in Customize.
-1. Retry the read-only smoke call (`droplet-list`, `apps-list`, etc.) before writes.
+The public documentation MCP (`docs`) tools require no sign-in; they are reached
+through the same DigitalOcean MCP connection.
 
 ## Errors
 
-| Symptom | Likely cause                  | What to do                                                                |
-| ------- | ----------------------------- | ------------------------------------------------------------------------- |
-| 401     | Missing or expired OAuth      | Re-authenticate that connector only                                       |
-| 403     | Insufficient scopes           | Recommend scope bundles; use OAuth reconnect — **not** chat-pasted tokens |
-| 429     | Rate limit (5000/hr, 250/min) | Back off; honor `Retry-After`; reduce polling                             |
+| Symptom | Likely cause                  | What to do                                                       |
+| ------- | ----------------------------- | ---------------------------------------------------------------- |
+| 401     | Missing or expired OAuth      | Re-authenticate the **digitalocean** server in Customize → MCP   |
+| 403     | Insufficient scopes           | Reconnect with broader OAuth scopes — **not** chat-pasted tokens |
+| 429     | Rate limit (5000/hr, 250/min) | Back off; honor `Retry-After`; reduce polling                    |
 
-**App Platform + private GitHub** is separate from MCP OAuth. A signed-in
-**digitalocean-apps** connector does not install the DigitalOcean GitHub app or grant
-repo access. If `apps-create-app-from-spec` / `apps-update` return
-`GitHub user not authenticated`, use **digitalocean-app-platform** (user steps at
+**App Platform + private GitHub** is separate from MCP OAuth. Signing in to
+DigitalOcean MCP does not install the DigitalOcean GitHub app or grant repo
+access. If `apps-create-app-from-spec` / `apps-update` return `GitHub user not authenticated`, use **digitalocean-app-platform** (user steps at
 [Create an app](https://cloud.digitalocean.com/apps/new)), then retry the deploy call.
 
 Public OAuth clients use **1-hour** access tokens and **single-use** refresh tokens.

@@ -11,8 +11,9 @@ follow [Agent Plugins](https://agent-plugins.org/) layout for portability.
   **`skills/<name>/`** copies (run `make sync-plugin-skills` after editing canonical skills).
 - **`.cursor-plugin/marketplace.json`** — multi-plugin catalog for Git import / marketplace.
 
-MCP OAuth endpoints live in `plugins/digitalocean/mcp.json` (seven connectors; do not
-change URLs without product sign-off).
+The MCP OAuth endpoint lives in `plugins/digitalocean/mcp.json` (the single hosted
+DigitalOcean MCP server, `https://mcp.digitalocean.com/mcp`; do not change the URL
+without product sign-off).
 
 ## Prerequisites
 

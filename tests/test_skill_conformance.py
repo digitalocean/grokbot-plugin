@@ -12,15 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / "skills"
 PLUGIN_DIR = ROOT / "plugins/digitalocean"
 PLUGIN_SKILLS = PLUGIN_DIR / "skills"
-MCP_URLS = {
-    "https://droplets.mcp.digitalocean.com/mcp",
-    "https://apps.mcp.digitalocean.com/mcp",
-    "https://accounts.mcp.digitalocean.com/mcp",
-    "https://databases.mcp.digitalocean.com/mcp",
-    "https://networking.mcp.digitalocean.com/mcp",
-    "https://insights.mcp.digitalocean.com/mcp",
-    "https://docs.mcp.digitalocean.com/mcp",
-}
+# Single hosted DigitalOcean MCP endpoint (see plugins/digitalocean/mcp.json and
+# https://docs.digitalocean.com/reference/mcp/configure-mcp/).
+DO_MCP_URL = "https://mcp.digitalocean.com/mcp"
+MCP_URLS = {DO_MCP_URL}
 
 
 def _skill_names() -> list[str]:
@@ -66,12 +61,13 @@ def test_plugin_skill_is_copy_not_symlink(name: str) -> None:
     assert canonical == bundled
 
 
-def test_mcp_json_unchanged_endpoints() -> None:
+def test_mcp_json_uses_single_server() -> None:
     import json
 
     mcp = json.loads((PLUGIN_DIR / "mcp.json").read_text())
+    assert list(mcp["mcpServers"].keys()) == ["digitalocean"]
     urls = {s["url"] for s in mcp["mcpServers"].values()}
-    assert urls == MCP_URLS
+    assert urls == {DO_MCP_URL}
 
 
 def test_docs_policy_is_read_only_tier1() -> None:

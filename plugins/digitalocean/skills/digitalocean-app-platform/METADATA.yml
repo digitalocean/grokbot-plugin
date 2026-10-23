@@ -2,5 +2,4 @@ maintainer:
 backup_maintainer: 
 tier: 2
 declared_endpoints:
-  - https://apps.mcp.digitalocean.com/mcp
-  - https://docs.mcp.digitalocean.com/mcp
+  - https://mcp.digitalocean.com/mcp

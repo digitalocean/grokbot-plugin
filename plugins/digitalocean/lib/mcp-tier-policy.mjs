@@ -4,9 +4,38 @@ import { join } from "node:path";
 const DOCS_SERVER = "digitalocean-docs";
 const SERVER_PREFIX = "digitalocean-";
 
+/**
+ * Single hosted DigitalOcean MCP server key (see plugins/digitalocean/mcp.json
+ * and https://docs.digitalocean.com/reference/mcp/configure-mcp/). It fronts
+ * every first-party DigitalOcean service and exposes three meta-tools:
+ *   - find_tools / retrieve_schema: read-only discovery, always allowed.
+ *   - invoke_tool: runs a service tool by its qualified `service/tool` name;
+ *     the real target is unwrapped here so per-tool approval tiers still apply.
+ */
+const DO_MCP_SERVER = "digitalocean";
+const DISCOVERY_TOOLS = new Set(["find_tools", "retrieve_schema"]);
+const INVOKE_TOOL = "invoke_tool";
+
 /** Only unmapped tool allowed without a policy row (shared region helper in upstream). */
 function isRegionListWithoutMap(toolName) {
   return toolName === "region-list";
+}
+
+/**
+ * The hook fires for every MCP server, so recognize the DigitalOcean MCP server
+ * by its mcp.json key. Cursor may surface it bare (`digitalocean`) or
+ * plugin-scoped (`plugin-digitalocean-digitalocean`); accept both.
+ */
+function isRouterServer(mcpServerName) {
+  return (
+    mcpServerName === DO_MCP_SERVER ||
+    mcpServerName === `plugin-${DO_MCP_SERVER}-${DO_MCP_SERVER}` ||
+    mcpServerName.endsWith(`-${DO_MCP_SERVER}`)
+  );
+}
+
+function allowDecision() {
+  return { permission: "allow", user_message: "", agent_message: "" };
 }
 
 function denyUnmapped(mcpServerName, toolName) {
@@ -14,15 +43,23 @@ function denyUnmapped(mcpServerName, toolName) {
     return {
       permission: "deny",
       user_message: `Blocked: ${toolName} is not in the read-only docs tier map.`,
-      agent_message:
-        `Refusing ${mcpServerName}/${toolName}: docs connector tools must be listed in approval-tiers-docs.json.`,
+      agent_message: `Refusing ${mcpServerName}/${toolName}: docs connector tools must be listed in approval-tiers-docs.json.`,
     };
   }
   return {
     permission: "deny",
     user_message: `Blocked: ${toolName} is not in the DigitalOcean tier policy map.`,
+    agent_message: `Refusing ${mcpServerName}/${toolName}: unmapped tools are denied by plugin hook policy.`,
+  };
+}
+
+function policyLoadFailDecision(toolName) {
+  return {
+    permission: "ask",
+    tier: 3,
+    user_message: "DigitalOcean policy files could not be loaded; treating this MCP call as Tier 3.",
     agent_message:
-      `Refusing ${mcpServerName}/${toolName}: unmapped tools are denied by plugin hook policy.`,
+      `Policy load failed. Do not run ${toolName} until tiers are confirmed with the user.`,
   };
 }
 
@@ -33,12 +70,7 @@ function denyUnmapped(mcpServerName, toolName) {
  * @param {string} [libDir]
  */
 export function resolvePluginRoot(envRoot, libDir = import.meta.dirname) {
-  return (
-    envRoot ||
-    process.env.CURSOR_PLUGIN_ROOT ||
-    process.env.CLAUDE_PLUGIN_ROOT ||
-    join(libDir, "..")
-  );
+  return envRoot || process.env.CURSOR_PLUGIN_ROOT || join(libDir, "..");
 }
 
 /**
@@ -79,18 +111,67 @@ export function loadPolicyIndex(pluginRoot, deps = {}) {
   return { byServer, byTool, loadError };
 }
 
-export function parseClaudePluginMcpTool(toolName) {
-  const scoped = toolName.match(
-    /^mcp__plugin_digitalocean(?:-internal)?_(digitalocean-[a-z]+)__(.+)$/
-  );
-  if (scoped) {
-    return { mcpServerName: scoped[1], toolName: scoped[2] };
+/**
+ * Unwrap a DigitalOcean MCP `invoke_tool` call to the concrete service tool it
+ * runs. The qualified name uses `service/tool` form (for example
+ * `droplets/droplet-delete`); argument/field names are matched defensively
+ * because the invoke_tool payload shape is not pinned by a published schema.
+ *
+ * @param {unknown} toolInput
+ * @returns {{ serviceKey: string|null, toolName: string, toolInput: unknown, qualified: string }|null}
+ */
+export function parseRouterInvocation(toolInput) {
+  let obj = toolInput;
+  if (typeof obj === "string") {
+    try {
+      obj = JSON.parse(obj);
+    } catch {
+      return null;
+    }
   }
-  const plain = toolName.match(/^(mcp__)?(digitalocean-[a-z]+)__(.+)$/);
-  if (plain) {
-    return { mcpServerName: plain[2], toolName: plain[3] };
+  if (!obj || typeof obj !== "object") {
+    return null;
   }
-  return null;
+  const qualified =
+    obj.tool ??
+    obj.name ??
+    obj.qualified_name ??
+    obj.qualifiedName ??
+    obj.toolName ??
+    obj.tool_name;
+  if (typeof qualified !== "string" || !qualified.trim()) {
+    return null;
+  }
+  const inner = obj.arguments ?? obj.args ?? obj.input ?? obj.parameters ?? {};
+  const segments = qualified
+    .split("/")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (segments.length === 0) {
+    return null;
+  }
+  const toolName = segments[segments.length - 1];
+  const serviceKey = segments.length >= 2 ? segments[segments.length - 2] : null;
+  return { serviceKey, toolName, toolInput: inner, qualified };
+}
+
+function serviceKeyToPolicyServer(serviceKey) {
+  if (!serviceKey) return null;
+  return serviceKey.startsWith(SERVER_PREFIX) ? serviceKey : `${SERVER_PREFIX}${serviceKey}`;
+}
+
+/** Resolve a policy server by a tool name when invoke_tool omits the service segment. */
+function resolveServerByToolName(policyIndex, toolName) {
+  let found = null;
+  for (const key of policyIndex.byTool.keys()) {
+    const sep = key.indexOf("::");
+    if (sep !== -1 && key.slice(sep + 2) === toolName) {
+      const server = key.slice(0, sep);
+      if (found && found !== server) return null; // ambiguous across services
+      found = server;
+    }
+  }
+  return found;
 }
 
 /**
@@ -138,39 +219,61 @@ export function summarizeTargets(toolInput) {
  * @returns {PolicyDecision}
  */
 export function evaluateMcpToolCall(input) {
-  const { mcpServerName, toolName, toolInput } = input;
+  let { mcpServerName, toolName, toolInput } = input;
   const pluginRoot = input.pluginRoot ?? resolvePluginRoot();
-  const policyIndex =
-    input.policyIndex ?? loadPolicyIndex(pluginRoot);
+  const policyIndex = input.policyIndex ?? loadPolicyIndex(pluginRoot);
 
-  if (!mcpServerName || !mcpServerName.startsWith(SERVER_PREFIX)) {
-    return {
-      permission: "allow",
-      user_message: "",
-      agent_message: "",
-    };
+  // Unknown/other servers are not governed by this plugin.
+  if (!mcpServerName) {
+    return allowDecision();
+  }
+
+  // Single hosted DigitalOcean MCP server: pass discovery through and unwrap
+  // invoke_tool to the concrete service tool so the tier maps below still apply.
+  if (isRouterServer(mcpServerName)) {
+    if (DISCOVERY_TOOLS.has(toolName)) {
+      return allowDecision();
+    }
+    if (toolName !== INVOKE_TOOL) {
+      return allowDecision();
+    }
+    const invocation = parseRouterInvocation(toolInput);
+    if (!invocation) {
+      return policyLoadFailDecision(INVOKE_TOOL);
+    }
+    const mapped =
+      serviceKeyToPolicyServer(invocation.serviceKey) ??
+      resolveServerByToolName(policyIndex, invocation.toolName);
+    if (!mapped) {
+      if (isRegionListWithoutMap(invocation.toolName)) {
+        return allowDecision();
+      }
+      if (policyIndex.loadError) {
+        return policyLoadFailDecision(invocation.toolName);
+      }
+      return denyUnmapped(DO_MCP_SERVER, invocation.toolName);
+    }
+    mcpServerName = mapped;
+    toolName = invocation.toolName;
+    toolInput = invocation.toolInput;
+  }
+
+  if (!mcpServerName.startsWith(SERVER_PREFIX)) {
+    return allowDecision();
   }
 
   if (policyIndex.loadError) {
     if (isRegionListWithoutMap(toolName)) {
-      return { permission: "allow", user_message: "", agent_message: "" };
+      return allowDecision();
     }
-    return {
-      permission: "ask",
-      tier: 3,
-      user_message:
-        "DigitalOcean policy files could not be loaded; treating this MCP call as Tier 3.",
-      agent_message:
-        `Policy load failed (${policyIndex.loadError}). ` +
-        `Do not run ${toolName} until tiers are confirmed with the user.`,
-    };
+    return policyLoadFailDecision(toolName);
   }
 
   const row = policyIndex.byTool.get(`${mcpServerName}::${toolName}`);
 
   if (!row) {
     if (isRegionListWithoutMap(toolName)) {
-      return { permission: "allow", user_message: "", agent_message: "" };
+      return allowDecision();
     }
     return denyUnmapped(mcpServerName, toolName);
   }
@@ -196,50 +299,29 @@ export function evaluateMcpToolCall(input) {
 }
 
 /**
- * Normalize Cursor beforeMCPExecution, preToolUse, or Claude PreToolUse payloads.
+ * Normalize a Cursor beforeMCPExecution payload
+ * (`mcp_server_name`, `tool_name`, `tool_input`).
  * @param {Record<string, unknown>} body
  */
 export function normalizeHookInput(body) {
-  if (body.mcp_server_name && body.tool_name) {
-    return {
-      mcpServerName: String(body.mcp_server_name),
-      toolName: String(body.tool_name),
-      toolInput: body.tool_input,
-    };
-  }
-
+  const mcpServerName = body.mcp_server_name ?? body.mcpServerName;
   const toolName = String(body.tool_name ?? body.toolName ?? "");
-  if (toolName.startsWith("mcp__")) {
-    const parsed = parseClaudePluginMcpTool(toolName);
-    if (parsed) {
-      return {
-        mcpServerName: parsed.mcpServerName,
-        toolName: parsed.toolName,
-        toolInput: body.tool_input ?? body.toolInput,
-      };
-    }
-  }
-
   return {
-    mcpServerName: body.mcp_server_name ? String(body.mcp_server_name) : undefined,
+    mcpServerName: mcpServerName ? String(mcpServerName) : undefined,
     toolName,
     toolInput: body.tool_input ?? body.toolInput,
   };
 }
 
 /**
+ * Shape a decision as a Cursor beforeMCPExecution response.
  * @param {PolicyDecision} decision
  */
 export function formatHookResponse(decision) {
-  const permission = decision.permission;
   return {
-    permission,
+    continue: true,
+    permission: decision.permission,
     user_message: decision.user_message,
     agent_message: decision.agent_message,
-    hookSpecificOutput: {
-      hookEventName: "PreToolUse",
-      permissionDecision: permission,
-      permissionDecisionReason: decision.user_message,
-    },
   };
 }

@@ -23,12 +23,12 @@ def test_403_scope_guidance() -> None:
 
     judge_result = eval_result.judge(
         expected_output=(
-            "Explains per-connector OAuth, connecting digitalocean-databases, and "
-            "that grants are not shared across MCP servers."
+            "Explains the single DigitalOcean MCP OAuth sign-in, reconnecting it "
+            "with sufficient scopes, and that one grant covers the databases service."
         ),
         assertions=[
-            "Mentions connecting or signing in to digitalocean-databases specifically",
-            "States that OAuth grants are per connector or not shared across endpoints",
+            "Mentions connecting or signing in to the DigitalOcean MCP server",
+            "States that one OAuth sign-in covers databases and the other services",
             "Does not instruct the user to paste a PAT into chat or commit a token to the repo",
             "Offers a read-only or reconnect step before retrying the database call",
         ],

@@ -5,7 +5,7 @@ import {
   evaluateMcpToolCall,
   loadPolicyIndex,
   normalizeHookInput,
-  parseClaudePluginMcpTool,
+  parseRouterInvocation,
   resolvePluginRoot,
 } from "../plugins/digitalocean/lib/mcp-tier-policy.mjs";
 
@@ -149,28 +149,118 @@ test("networking firewall delete is tier 3 ask", () => {
   assert.equal(d.permission, "ask");
 });
 
-test("parse Claude scoped MCP tool names", () => {
-  const parsed = parseClaudePluginMcpTool(
-    "mcp__plugin_digitalocean_digitalocean-droplets__droplet-delete"
-  );
-  assert.deepEqual(parsed, {
-    mcpServerName: "digitalocean-droplets",
-    toolName: "droplet-delete",
+// --- DigitalOcean MCP (single server) ----------------------------------------
+
+test("DigitalOcean MCP discovery tools pass through", () => {
+  for (const toolName of ["find_tools", "retrieve_schema"]) {
+    const d = evaluateMcpToolCall({
+      pluginRoot: PLUGIN_ROOT,
+      mcpServerName: "digitalocean",
+      toolName,
+      toolInput: { query: "delete a droplet" },
+    });
+    assert.equal(d.permission, "allow", toolName);
+  }
+});
+
+test("invoke_tool unwraps tier 3 droplet-delete", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean",
+    toolName: "invoke_tool",
+    toolInput: JSON.stringify({
+      tool: "droplets/droplet-delete",
+      arguments: { id: 12345, name: "web-prod-01" },
+    }),
   });
-  const legacy = parseClaudePluginMcpTool(
-    "mcp__plugin_digitalocean-internal_digitalocean-droplets__droplet-list"
-  );
-  assert.equal(legacy?.toolName, "droplet-list");
+  assert.equal(d.permission, "ask");
+  assert.match(d.user_message, /12345/);
+  assert.match(d.user_message, /Tier 3/i);
+});
+
+test("invoke_tool unwraps tier 1 read as allow", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean",
+    toolName: "invoke_tool",
+    toolInput: { tool: "droplets/droplet-list", arguments: {} },
+  });
+  assert.equal(d.permission, "allow");
+});
+
+test("invoke_tool denies unmapped write target", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean",
+    toolName: "invoke_tool",
+    toolInput: { tool: "insights/insights-future-write", arguments: {} },
+  });
+  assert.equal(d.permission, "deny");
+});
+
+test("invoke_tool resolves service from tool name when segment omitted", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean",
+    toolName: "invoke_tool",
+    toolInput: { name: "firewall-delete", arguments: { id: "fw-abc" } },
+  });
+  assert.equal(d.permission, "ask");
+  assert.match(d.user_message, /Tier 3/i);
+});
+
+test("invoke_tool with unparseable target fails to tier 3 ask", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean",
+    toolName: "invoke_tool",
+    toolInput: { arguments: { id: 1 } },
+  });
+  assert.equal(d.permission, "ask");
+});
+
+test("plugin-scoped DigitalOcean MCP server name is recognized", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "plugin-digitalocean-digitalocean",
+    toolName: "invoke_tool",
+    toolInput: { tool: "droplets/droplet-create", arguments: { region: "nyc3" } },
+  });
+  assert.equal(d.permission, "ask");
+  assert.match(d.user_message, /Tier 4/i);
+});
+
+test("parseRouterInvocation splits qualified name and arguments", () => {
+  const parsed = parseRouterInvocation({
+    tool: "databases/db-cluster-create",
+    arguments: { name: "pg-prod" },
+  });
+  assert.deepEqual(parsed, {
+    serviceKey: "databases",
+    toolName: "db-cluster-create",
+    toolInput: { name: "pg-prod" },
+    qualified: "databases/db-cluster-create",
+  });
+});
+
+test("non-digitalocean server is allowed", () => {
+  const d = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "some-other-server",
+    toolName: "do-anything",
+    toolInput: {},
+  });
+  assert.equal(d.permission, "allow");
 });
 
 test("normalize Cursor beforeMCPExecution payload", () => {
   const n = normalizeHookInput({
-    mcp_server_name: "digitalocean-droplets",
-    tool_name: "droplet-list",
+    mcp_server_name: "digitalocean",
+    tool_name: "invoke_tool",
     tool_input: "{}",
   });
-  assert.equal(n.mcpServerName, "digitalocean-droplets");
-  assert.equal(n.toolName, "droplet-list");
+  assert.equal(n.mcpServerName, "digitalocean");
+  assert.equal(n.toolName, "invoke_tool");
 });
 
 test("policy index loads all endpoint maps", () => {

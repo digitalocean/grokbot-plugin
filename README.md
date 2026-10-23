@@ -1,11 +1,12 @@
 # DigitalOcean Cursor Plugin
 
-**Run Droplets, App Platform, managed databases, DNS, firewalls, and monitoring on DigitalOcean.**
+**Manage any DigitalOcean product — Droplets, App Platform, Kubernetes, managed databases, networking, monitoring, and more — from Cursor.**
 
-Official Cursor plugin (`digitalocean`) with seven hosted DigitalOcean MCP connectors,
-eleven agent skills, and approval-tier policy maps plus optional hook enforcement.
+Official Cursor plugin (`digitalocean`) with the single hosted DigitalOcean MCP
+connector, eleven agent skills, and approval-tier policy maps plus optional hook
+enforcement.
 
-**Includes:** 7 MCP connectors · 11 skills
+**Includes:** 1 DigitalOcean MCP connector · 11 skills
 
 ## Install
 
@@ -32,21 +33,23 @@ Copy [`plugins/digitalocean`](plugins/digitalocean) to
 Maintainers: after editing canonical [`skills/`](skills/), run
 `make sync-plugin-skills` before committing (CI enforces parity).
 
-## MCP connectors
+## MCP connector
 
-Per-service hosted endpoints (not the `mcp.digitalocean.com` router). OAuth on first use unless noted.
+The plugin ships a single hosted **DigitalOcean MCP** server, which fronts every
+first-party DigitalOcean service (the
+[recommended setup](https://docs.digitalocean.com/reference/mcp/configure-mcp/)).
 
-| MCP server              | Endpoint                                           |
-| ----------------------- | -------------------------------------------------- |
-| digitalocean-droplets   | `https://droplets.mcp.digitalocean.com/mcp`        |
-| digitalocean-apps       | `https://apps.mcp.digitalocean.com/mcp`            |
-| digitalocean-accounts   | `https://accounts.mcp.digitalocean.com/mcp`        |
-| digitalocean-databases  | `https://databases.mcp.digitalocean.com/mcp`       |
-| digitalocean-networking | `https://networking.mcp.digitalocean.com/mcp`      |
-| digitalocean-insights   | `https://insights.mcp.digitalocean.com/mcp`        |
-| digitalocean-docs       | `https://docs.mcp.digitalocean.com/mcp` (no token) |
+| MCP server   | Endpoint                           |
+| ------------ | ---------------------------------- |
+| digitalocean | `https://mcp.digitalocean.com/mcp` |
 
-**Auth:** one OAuth grant per connector (not shared). Connect **Droplets** when you enable the plugin; connect **Apps**, **Accounts**, **Databases**, **Networking**, and **Insights** on first use (**digitalocean-connect** skill). Do not paste Personal Access Tokens in chat.
+It exposes three meta-tools — `find_tools`, `retrieve_schema`, and `invoke_tool`
+— and runs service tools (droplets, apps, databases, networking, accounts,
+insights, docs, and more) by their qualified `service/tool` name.
+
+**Auth:** one OAuth grant covers every service; connect DigitalOcean MCP from
+**Customize → MCP** when you enable the plugin (**digitalocean-connect** skill).
+Do not paste Personal Access Tokens in chat.
 
 Configuration: [`plugins/digitalocean/mcp.json`](plugins/digitalocean/mcp.json) (Agent Plugins schema). No `${VAR}` placeholders — hosted OAuth only.
 

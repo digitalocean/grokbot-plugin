@@ -6,7 +6,7 @@ not run them unattended.
 
 ## Read-only smoke prompts
 
-See `smoke/` — one file per connector with example agent prompts and expected tools.
+See `smoke/` — one file per DigitalOcean service with example agent prompts and expected tools.
 
 ## Skill trigger evals
 

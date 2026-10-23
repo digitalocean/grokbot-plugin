@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * beforeMCPExecution / PreToolUse hook: enforce DigitalOcean approval tiers.
+ * beforeMCPExecution hook: enforce DigitalOcean approval tiers (Cursor).
  * Reads JSON from stdin; writes JSON to stdout. Exit 2 on deny.
  */
 

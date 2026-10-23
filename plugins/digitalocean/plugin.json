@@ -1,7 +1,7 @@
 {
   "name": "digitalocean",
-  "version": "1.1.0",
-  "description": "Run Droplets, App Platform, managed databases, DNS, firewalls, and monitoring on DigitalOcean with OAuth MCP connectors and approval-tier safety.",
+  "version": "1.2.0",
+  "description": "Manage any DigitalOcean product — Droplets, App Platform, Kubernetes, databases, networking, monitoring, and more — through the single hosted DigitalOcean MCP server with OAuth and approval-tier safety.",
   "author": {
     "name": "DigitalOcean",
     "email": ""

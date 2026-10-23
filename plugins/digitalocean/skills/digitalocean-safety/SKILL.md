@@ -13,19 +13,21 @@ tool listing. **Skills enforce tiers in instructions**; tier maps under the
 
 ## Policy location
 
-Read tiers only from the plugin copy of policy JSON:
-
-- **Claude Code:** `${CLAUDE_PLUGIN_ROOT}/policy/approval-tiers-<endpoint>.json`
-- **Cursor / Grok Bot:** resolve the installed plugin root for catalog id
-  `digitalocean`, then `policy/approval-tiers-<endpoint>.json` (same
-  files as this plugin ships).
+Read tiers only from the plugin copy of policy JSON: resolve the installed
+plugin root for catalog id `digitalocean` (Cursor expands
+`${CURSOR_PLUGIN_ROOT}`), then `policy/approval-tiers-<endpoint>.json` (the same
+files this plugin ships).
 
 If a policy file cannot be read or parsed, treat **every write** as **Tier 3**
 (named confirmation) and do not assume Tier 1 reads for unmapped tools.
 
-Endpoint maps shipped in v1:
+All tools are reached through the single **DigitalOcean MCP** server
+(`invoke_tool` with a qualified `service/tool` name). The tier maps are keyed by
+service; the service segment of the qualified name selects the map below.
 
-| Map file                         | MCP server              |
+Endpoint maps shipped today:
+
+| Map file                         | DigitalOcean service    |
 | -------------------------------- | ----------------------- |
 | `approval-tiers-droplets.json`   | digitalocean-droplets   |
 | `approval-tiers-accounts.json`   | digitalocean-accounts   |
@@ -136,7 +138,8 @@ five billable at Tier 4). See policy `notes` per tool and README for the list.
 
 ## Hook enforcement
 
-When the host runs plugin hooks (`beforeMCPExecution` / `PreToolUse`), Tier 1
-writes are allowed, Tier 2–4 return **ask**, and unmapped writes are **denied**.
-Skills must still enforce tiers when hooks are absent (for example some Grok Bot
-builds).
+When the host runs the plugin hook (`beforeMCPExecution`), Tier 1 writes are
+allowed, Tier 2–4 return **ask**, and unmapped writes are **denied**. The hook
+unwraps the DigitalOcean MCP `invoke_tool` target before applying the tier maps,
+and `find_tools` / `retrieve_schema` discovery calls pass through. Skills must
+still enforce tiers when hooks are absent.
