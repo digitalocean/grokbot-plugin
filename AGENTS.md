@@ -1,38 +1,21 @@
 # Agent / developer guide
 
-Repository for the **DigitalOcean** Cursor plugin (`digitalocean`). Canonical skill trees
-follow [Agent Plugins](https://agent-plugins.org/) layout for portability.
+This repository is a single [Agent Plugins](https://agent-plugins.org/) package
+for **DigitalOcean**: `plugin.json` + `mcp.json` + `skills/`.
 
 ## Layout
 
-- **`skills/<name>/`** — canonical skill trees (`SKILL.md`, optional `references/`, `evals/`,
+- **`plugin.json`** — Agent Plugins manifest.
+- **`mcp.json`** — the single hosted DigitalOcean MCP server
+  (`https://mcp.digitalocean.com/mcp`; do not change the URL without product
+  sign-off).
+- **`skills/<name>/`** — skill trees (`SKILL.md`, optional `references/`,
   `METADATA.yml`).
-- **`plugins/digitalocean/`** — shippable plugin: `mcp.json`, policy, hooks, assets, and
-  **`skills/<name>/`** copies (run `make sync-plugin-skills` after editing canonical skills).
-- **`.cursor-plugin/marketplace.json`** — multi-plugin catalog for Git import / marketplace.
 
-MCP OAuth endpoints live in `plugins/digitalocean/mcp.json` (seven connectors; do not
-change URLs without product sign-off).
+## Conventions
 
-## Prerequisites
-
-- Python 3.11+
-- [uv](https://docs.astral.sh/uv/)
-- Node.js 20+ (tier drift + hook tests)
-
-## Commands
-
-```bash
-uv sync --group dev
-make sync-plugin-skills   # skills/ → plugins/digitalocean/skills/
-make lint-fix && make lint
-make test
-make tier-drift
-```
-
-Integration evals (network + `MODEL_ACCESS_KEY` + `skill-tools`) run in a CI environment
-that provides those dependencies. Eval sources live under `skills/*/evals/`.
-
-Hook logic: `plugins/digitalocean/lib/mcp-tier-policy.mjs` (`tests/test_mcp_tier_policy.mjs`).
-
-See [CONFORMANCE.md](CONFORMANCE.md) and [SUBMISSION.md](SUBMISSION.md).
+- Each skill dir has a `SKILL.md` whose frontmatter `name` matches the directory.
+- `METADATA.yml` records `maintainer`, `tier`, and `declared_endpoints` (the MCP
+  URL above).
+- Approval tiers live in the **digitalocean-safety** skill and are referenced by
+  the other skills.

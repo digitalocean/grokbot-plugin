@@ -8,22 +8,23 @@ description: >-
 ---
 # DigitalOcean root router
 
-Route DigitalOcean work to the right skill and MCP connector. Do not call write
-tools from this skill.
+Route DigitalOcean work to the right skill and DigitalOcean service. All tools
+are reached through the single hosted **DigitalOcean MCP** server
+(`mcp.digitalocean.com/mcp`, server key `digitalocean`). Do not call write tools
+from this skill.
 
 ## Before any infrastructure change
 
 1. Load the **digitalocean-safety** policy (approval tiers and global rules).
 1. State which **DigitalOcean team** the OAuth grant targets. If unclear, use
-   `account-get-information` on **digitalocean-accounts** after the user connects
-   that connector.
+   `account-get-information` (accounts service) once DigitalOcean MCP is connected.
 1. Prefer **read-only** calls first to establish current state.
 
 ## Choose a skill
 
-| User intent                | Skill                     | MCP connectors                               |
+| User intent                | Skill                     | DigitalOcean service(s)                      |
 | -------------------------- | ------------------------- | -------------------------------------------- |
-| Connect, auth, 401/403/429 | digitalocean-connect      | All (connection only)                        |
+| Connect, auth, 401/403/429 | digitalocean-connect      | DigitalOcean MCP (connection only)           |
 | Cost, balance, invoices    | digitalocean-costs        | digitalocean-droplets, digitalocean-accounts |
 | Droplets, VMs, snapshots   | digitalocean-droplets     | digitalocean-droplets                        |
 | App Platform, deploy, logs | digitalocean-app-platform | digitalocean-apps, digitalocean-docs         |
@@ -34,17 +35,22 @@ tools from this skill.
 | Inventory, cleanup ideas   | digitalocean-inventory    | Multiple (read-first)                        |
 | Product/docs questions     | digitalocean (this skill) | digitalocean-docs                            |
 
+The skills above cover the most common products. DigitalOcean MCP reaches
+**every** DigitalOcean product (for example Kubernetes, Spaces, Functions,
+Container Registry, GenAI). For a product without a dedicated skill, use
+`find_tools` to discover the right tool and `invoke_tool` to run it, and still
+apply **digitalocean-safety** tiers (unmapped writes are Tier 3 / confirm).
+
 ## Docs
 
-For product selection or unfamiliar APIs, search **digitalocean-docs** with
+For product selection or unfamiliar APIs, search the docs service with
 `docs-search` before proposing changes.
 
-## Connectors at install vs lazy
+## Connecting
 
-- **Connect at install:** digitalocean-droplets, digitalocean-apps,
-  digitalocean-accounts.
-- **Connect on first use:** digitalocean-databases, digitalocean-networking,
-  digitalocean-insights.
-- **digitalocean-docs** needs no sign-in.
+One hosted DigitalOcean MCP server fronts every service, so a single OAuth
+sign-in covers droplets, apps, accounts, databases, networking, insights, and
+docs. Use `find_tools` to discover a tool and `invoke_tool` to run it.
 
-If a connector is disabled or unsigned, hand off to **digitalocean-connect**.
+If the **digitalocean** MCP server is disabled or unsigned, hand off to
+**digitalocean-connect**.

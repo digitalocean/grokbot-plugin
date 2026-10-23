@@ -11,7 +11,7 @@ Connectors: **digitalocean-apps**, **digitalocean-docs**.
 
 Content adapted from [do-app-platform-skills](https://github.com/digitalocean-labs/do-app-platform-skills) (MIT) for MCP-only workflows — see `NOTICE`.
 
-1. Load **digitalocean-safety** (Apps tier map ships in a later plugin version; until then treat creates/updates as billable with confirmation and deletes as Tier 3).
+1. Load **digitalocean-safety** (treat app creates/updates as billable with confirmation and deletes as Tier 3).
 1. Read: `apps-list`, `apps-get-info`, `apps-get-deployment-status`, `apps-get-logs`.
 1. For spec design, search docs with `docs-search` on **digitalocean-docs**.
 

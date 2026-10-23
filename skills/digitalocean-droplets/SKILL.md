@@ -7,10 +7,10 @@ description: >-
 ---
 # Droplets lifecycle (MCP)
 
-Connector: **digitalocean-droplets** (`droplets.mcp.digitalocean.com`).
+Service: **droplets**, reached through DigitalOcean MCP (`invoke_tool` →
+`droplets/<tool>`).
 
-1. Load **digitalocean-safety** and resolve the tool tier from the plugin
-   `policy/approval-tiers-droplets.json` before every call.
+1. Load **digitalocean-safety** and resolve the tool tier before every call.
 1. Read first: `droplet-list`, `droplet-get`, `size-list`, `region-list` as needed.
 1. For SSH keys, use **digitalocean-accounts** `key-list` when creating Droplets.
 
