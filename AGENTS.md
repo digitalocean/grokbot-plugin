@@ -12,15 +12,10 @@ for **DigitalOcean**: `plugin.json` + `mcp.json` + `skills/`.
 - **`skills/<name>/`** — skill trees (`SKILL.md`, optional `references/`,
   `METADATA.yml`).
 
-## Prerequisites
+## Conventions
 
-- Python 3.11+
-- [uv](https://docs.astral.sh/uv/)
-
-## Commands
-
-```bash
-uv sync --group dev
-make lint-fix && make lint
-make test
-```
+- Each skill dir has a `SKILL.md` whose frontmatter `name` matches the directory.
+- `METADATA.yml` records `maintainer`, `tier`, and `declared_endpoints` (the MCP
+  URL above).
+- Approval tiers live in the **digitalocean-safety** skill and are referenced by
+  the other skills.

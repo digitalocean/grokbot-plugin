@@ -57,13 +57,6 @@ The **digitalocean-safety** skill defines approval tiers that every other skill
 follows — **Tier 1** runs freely (reads), **Tier 2** confirms, **Tier 3** needs
 named confirmation (destructive), **Tier 4** shows price first (billable).
 
-## Development
-
-```bash
-uv sync --group dev
-make lint-fix && make lint && make test
-```
-
 ## License
 
 MIT — see [LICENSE](LICENSE).
