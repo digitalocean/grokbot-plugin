@@ -22,10 +22,22 @@ If a policy file cannot be read or parsed, treat **every write** as **Tier 3**
 (named confirmation) and do not assume Tier 1 reads for unmapped tools.
 
 All tools are reached through the single **DigitalOcean MCP** server
-(`invoke_tool` with a qualified `service/tool` name). The tier maps are keyed by
-service; the service segment of the qualified name selects the map below.
+(`invoke_tool` with a qualified `service/tool` name), which fronts **every**
+DigitalOcean product.
 
-Endpoint maps shipped today:
+## How a tier is chosen
+
+1. **Curated override:** if the tool has a row in a `policy/approval-tiers-*.json`
+   map, use that `proposedTier` (upstream-synced, most precise).
+1. **Generic classification (all other products):** tier the tool by its verb —
+   clear reads (`*-list`, `*-get`, `describe`, …) are **Tier 1**; delete/outage
+   verbs (`delete`, `destroy`, `power-off`, `reset`, `rebuild`, `disable`, …) are
+   **Tier 3**; billable creates (`create`, `resize`, `reserve`, `enable-backups`,
+   `snapshot`, …) are **Tier 4**; any other mutation or unrecognized verb is
+   **Tier 2**. Destructive verbs win over read verbs in mixed names.
+
+Nothing is silently denied: unknown tools fall to **Tier 2+ (confirm)** rather
+than running on their own. Curated maps shipped today (overrides):
 
 | Map file                         | DigitalOcean service    |
 | -------------------------------- | ----------------------- |
@@ -37,12 +49,8 @@ Endpoint maps shipped today:
 | `approval-tiers-insights.json`   | digitalocean-insights   |
 | `approval-tiers-docs.json`       | digitalocean-docs       |
 
-**Unmapped tools:** any MCP write tool not listed in a tier map is **Tier 3**
-(skill layer). The plugin hook **denies** unmapped writes (defense in depth).
-
-**Docs connector:** `approval-tiers-docs.json` lists every docs MCP tool as
-**Tier 1 / read-only** (upstream `docs_*_annotations_test.go` at `8ce21db`). The
-hook allows only mapped docs tools; there are no write tools in the map.
+**Docs:** `approval-tiers-docs.json` lists every docs MCP tool as **Tier 1 /
+read-only** (upstream `docs_*_annotations_test.go` at `8ce21db`).
 
 ## Tiers
 
@@ -77,7 +85,8 @@ hook allows only mapped docs tools; there are no write tools in the map.
 ## Tier lookup
 
 Before any DigitalOcean MCP tool call, look up the tool in the correct
-`approval-tiers-*.json` and follow `proposedTier`.
+`approval-tiers-*.json` and follow `proposedTier`. If the tool (or its product)
+has no row, apply the generic verb classification in **How a tier is chosen**.
 
 ## Cursor: inlined Tier 3 and Tier 4 tools
 
@@ -138,8 +147,9 @@ five billable at Tier 4). See policy `notes` per tool and README for the list.
 
 ## Hook enforcement
 
-When the host runs the plugin hook (`beforeMCPExecution`), Tier 1 writes are
-allowed, Tier 2–4 return **ask**, and unmapped writes are **denied**. The hook
-unwraps the DigitalOcean MCP `invoke_tool` target before applying the tier maps,
-and `find_tools` / `retrieve_schema` discovery calls pass through. Skills must
-still enforce tiers when hooks are absent.
+When the host runs the plugin hook (`beforeMCPExecution`), Tier 1 calls are
+allowed and Tier 2–4 return **ask**. The hook unwraps the DigitalOcean MCP
+`invoke_tool` target, applies a curated tier map when one exists, and otherwise
+classifies the tool generically by verb (so every product is tiered, not
+blocked); `find_tools` / `retrieve_schema` discovery calls pass through. Skills
+must still enforce tiers when hooks are absent.

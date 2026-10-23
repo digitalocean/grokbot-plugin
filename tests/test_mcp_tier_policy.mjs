@@ -57,14 +57,15 @@ test("insights uptimecheck-create is tier 2 ask", () => {
   assert.match(d.user_message, /Tier 2/i);
 });
 
-test("unmapped write on insights is denied", () => {
+test("unmapped write on insights asks (generic Tier 2)", () => {
   const d = evaluateMcpToolCall({
     pluginRoot: PLUGIN_ROOT,
     mcpServerName: "digitalocean-insights",
     toolName: "insights-future-write",
     toolInput: {},
   });
-  assert.equal(d.permission, "deny");
+  assert.equal(d.permission, "ask");
+  assert.match(d.user_message, /Tier 2/i);
 });
 
 test("unmapped read on insights is allowed", () => {
@@ -98,34 +99,37 @@ test("docs-search allowed via read-only tier map", () => {
   assert.equal(d.permission, "allow");
 });
 
-test("unmapped docs tool is denied", () => {
+test("unmapped destructive tool asks as Tier 3", () => {
   const d = evaluateMcpToolCall({
     pluginRoot: PLUGIN_ROOT,
     mcpServerName: "digitalocean-docs",
     toolName: "docs-destroy-all",
     toolInput: {},
   });
-  assert.equal(d.permission, "deny");
+  assert.equal(d.permission, "ask");
+  assert.match(d.user_message, /Tier 3/i);
 });
 
-test("unmapped docs-submit-feedback is denied despite docs- prefix", () => {
+test("unmapped non-read mutation asks as Tier 2", () => {
   const d = evaluateMcpToolCall({
     pluginRoot: PLUGIN_ROOT,
     mcpServerName: "digitalocean-docs",
     toolName: "docs-submit-feedback",
     toolInput: { message: "hi" },
   });
-  assert.equal(d.permission, "deny");
+  assert.equal(d.permission, "ask");
+  assert.match(d.user_message, /Tier 2/i);
 });
 
-test("unmapped foo-get-and-reset is denied despite -get in name", () => {
+test("name with -get but a reset verb classifies destructive (Tier 3)", () => {
   const d = evaluateMcpToolCall({
     pluginRoot: PLUGIN_ROOT,
     mcpServerName: "digitalocean-droplets",
     toolName: "foo-get-and-reset",
     toolInput: {},
   });
-  assert.equal(d.permission, "deny");
+  assert.equal(d.permission, "ask");
+  assert.match(d.user_message, /Tier 3/i);
 });
 
 test("accounts ssh key create is tier 3 ask", () => {
@@ -188,14 +192,47 @@ test("invoke_tool unwraps tier 1 read as allow", () => {
   assert.equal(d.permission, "allow");
 });
 
-test("invoke_tool denies unmapped write target", () => {
+test("invoke_tool asks (generic Tier 2) for an unmapped write target", () => {
   const d = evaluateMcpToolCall({
     pluginRoot: PLUGIN_ROOT,
     mcpServerName: "digitalocean",
     toolName: "invoke_tool",
     toolInput: { tool: "insights/insights-future-write", arguments: {} },
   });
-  assert.equal(d.permission, "deny");
+  assert.equal(d.permission, "ask");
+  assert.match(d.user_message, /Tier 2/i);
+});
+
+test("invoke_tool tiers products that have no policy map (generic)", () => {
+  // Kubernetes has no curated map, yet verbs still tier correctly.
+  const read = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean",
+    toolName: "invoke_tool",
+    toolInput: { tool: "kubernetes/kubernetes-cluster-list", arguments: {} },
+  });
+  assert.equal(read.permission, "allow");
+
+  const del = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean",
+    toolName: "invoke_tool",
+    toolInput: {
+      tool: "kubernetes/kubernetes-cluster-delete",
+      arguments: { id: "k8s-abc", name: "prod" },
+    },
+  });
+  assert.equal(del.permission, "ask");
+  assert.match(del.user_message, /Tier 3/i);
+
+  const create = evaluateMcpToolCall({
+    pluginRoot: PLUGIN_ROOT,
+    mcpServerName: "digitalocean",
+    toolName: "invoke_tool",
+    toolInput: { tool: "spaces/spaces-create", arguments: { name: "assets" } },
+  });
+  assert.equal(create.permission, "ask");
+  assert.match(create.user_message, /Tier 4/i);
 });
 
 test("invoke_tool resolves service from tool name when segment omitted", () => {

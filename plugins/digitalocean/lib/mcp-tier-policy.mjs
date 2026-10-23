@@ -1,7 +1,6 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-const DOCS_SERVER = "digitalocean-docs";
 const SERVER_PREFIX = "digitalocean-";
 
 /**
@@ -16,9 +15,41 @@ const DO_MCP_SERVER = "digitalocean";
 const DISCOVERY_TOOLS = new Set(["find_tools", "retrieve_schema"]);
 const INVOKE_TOOL = "invoke_tool";
 
-/** Only unmapped tool allowed without a policy row (shared region helper in upstream). */
-function isRegionListWithoutMap(toolName) {
-  return toolName === "region-list";
+/**
+ * Generic, name-based tier classifier. Because the server fronts *every*
+ * DigitalOcean product, most tools have no hand-maintained policy row. DO MCP
+ * tool names follow consistent verb conventions, so we can tier any tool by its
+ * verb and still be safe:
+ *   - clear reads            -> Tier 1 (runs freely)
+ *   - delete/outage verbs    -> Tier 3 (named confirmation)
+ *   - billable create/resize -> Tier 4 (price first)
+ *   - any other mutation or unknown verb -> Tier 2 (confirm)
+ * Curated `policy/*.json` rows (when present) override this for precision.
+ */
+const READ_VERBS = new Set([
+  "list", "get", "describe", "info", "show", "read", "find", "search",
+  "status", "history", "preview", "download", "export", "fetch", "view",
+]);
+const DESTRUCTIVE_VERBS = new Set([
+  "delete", "destroy", "remove", "purge", "flush", "reset", "rebuild",
+  "restore", "revoke", "detach", "release", "cancel", "disable", "drop",
+  "wipe", "deregister", "uninstall", "shutdown", "poweroff", "kill",
+  "terminate", "evict", "rollback", "downgrade",
+]);
+const BILLABLE_VERBS = new Set([
+  "create", "resize", "reserve", "provision", "upgrade", "snapshot",
+  "register", "buy", "purchase",
+]);
+
+export function classifyToolByName(toolName) {
+  const tokens = String(toolName).toLowerCase().split(/[-_]+/).filter(Boolean);
+  const has = (set) => tokens.some((t) => set.has(t));
+  const joined = tokens.join("-");
+  // Destructive wins over read so names like "get-and-reset" are not treated as reads.
+  if (has(DESTRUCTIVE_VERBS) || joined.includes("power-off")) return 3;
+  if (has(BILLABLE_VERBS) || joined.includes("enable-backups")) return 4;
+  if (has(READ_VERBS)) return 1;
+  return 2;
 }
 
 /**
@@ -38,19 +69,17 @@ function allowDecision() {
   return { permission: "allow", user_message: "", agent_message: "" };
 }
 
-function denyUnmapped(mcpServerName, toolName) {
-  if (mcpServerName === DOCS_SERVER) {
-    return {
-      permission: "deny",
-      user_message: `Blocked: ${toolName} is not in the read-only docs tier map.`,
-      agent_message: `Refusing ${mcpServerName}/${toolName}: docs connector tools must be listed in approval-tiers-docs.json.`,
-    };
+/** Build an allow (Tier 1) or ask (Tier 2–4) decision for a resolved tier. */
+function tierDecision(tier, label, toolInput) {
+  if (tier === 1) {
+    return { permission: "allow", user_message: "", agent_message: "", tier };
   }
-  return {
-    permission: "deny",
-    user_message: `Blocked: ${toolName} is not in the DigitalOcean tier policy map.`,
-    agent_message: `Refusing ${mcpServerName}/${toolName}: unmapped tools are denied by plugin hook policy.`,
-  };
+  const tierLabel = tier === 4 ? "Tier 4 (price first)" : `Tier ${tier}`;
+  const targets = summarizeTargets(toolInput);
+  const msg =
+    `DigitalOcean ${tierLabel}: ${label} targets ${targets}. ` +
+    `Confirm in chat before this MCP call proceeds.`;
+  return { permission: "ask", tier, user_message: msg, agent_message: msg };
 }
 
 function policyLoadFailDecision(toolName) {
@@ -229,7 +258,7 @@ export function evaluateMcpToolCall(input) {
   }
 
   // Single hosted DigitalOcean MCP server: pass discovery through and unwrap
-  // invoke_tool to the concrete service tool so the tier maps below still apply.
+  // invoke_tool to the concrete service tool, then tier it generically below.
   if (isRouterServer(mcpServerName)) {
     if (DISCOVERY_TOOLS.has(toolName)) {
       return allowDecision();
@@ -239,63 +268,32 @@ export function evaluateMcpToolCall(input) {
     }
     const invocation = parseRouterInvocation(toolInput);
     if (!invocation) {
+      // Can't see the real target — be cautious and ask.
       return policyLoadFailDecision(INVOKE_TOOL);
     }
-    const mapped =
+    // Resolve the policy server when we can (enables curated overrides); fall
+    // back to the generic server key so unmapped products still get tiered.
+    mcpServerName =
       serviceKeyToPolicyServer(invocation.serviceKey) ??
-      resolveServerByToolName(policyIndex, invocation.toolName);
-    if (!mapped) {
-      if (isRegionListWithoutMap(invocation.toolName)) {
-        return allowDecision();
-      }
-      if (policyIndex.loadError) {
-        return policyLoadFailDecision(invocation.toolName);
-      }
-      return denyUnmapped(DO_MCP_SERVER, invocation.toolName);
-    }
-    mcpServerName = mapped;
+      resolveServerByToolName(policyIndex, invocation.toolName) ??
+      DO_MCP_SERVER;
     toolName = invocation.toolName;
     toolInput = invocation.toolInput;
-  }
-
-  if (!mcpServerName.startsWith(SERVER_PREFIX)) {
+  } else if (!mcpServerName.startsWith(SERVER_PREFIX)) {
+    // Non-DigitalOcean server: not ours.
     return allowDecision();
   }
 
   if (policyIndex.loadError) {
-    if (isRegionListWithoutMap(toolName)) {
-      return allowDecision();
-    }
     return policyLoadFailDecision(toolName);
   }
 
+  // Curated policy row (upstream-synced) wins; otherwise classify by name so the
+  // decision is generic across every DigitalOcean product.
   const row = policyIndex.byTool.get(`${mcpServerName}::${toolName}`);
+  const tier = row ? (row.proposedTier ?? 1) : classifyToolByName(toolName);
 
-  if (!row) {
-    if (isRegionListWithoutMap(toolName)) {
-      return allowDecision();
-    }
-    return denyUnmapped(mcpServerName, toolName);
-  }
-
-  const tier = row.proposedTier ?? 1;
-  const targets = summarizeTargets(toolInput);
-
-  if (tier === 1) {
-    return { permission: "allow", user_message: "", agent_message: "", tier };
-  }
-
-  const tierLabel = tier === 4 ? "Tier 4 (price first)" : `Tier ${tier}`;
-  const msg =
-    `DigitalOcean ${tierLabel}: ${mcpServerName}/${toolName} targets ${targets}. ` +
-    `Confirm in chat before this MCP call proceeds.`;
-
-  return {
-    permission: "ask",
-    tier,
-    user_message: msg,
-    agent_message: msg,
-  };
+  return tierDecision(tier, `${mcpServerName}/${toolName}`, toolInput);
 }
 
 /**

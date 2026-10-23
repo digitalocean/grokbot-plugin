@@ -71,12 +71,19 @@ Configuration: [`plugins/digitalocean/mcp.json`](plugins/digitalocean/mcp.json) 
 
 ## Approval tiers and hooks
 
-Tier maps live under [`plugins/digitalocean/policy/`](plugins/digitalocean/policy/) for
-Droplets, Accounts, Networking, Databases, Apps, Insights, and Docs (read-only).
+Every tool is tiered — **Tier 1** runs freely (reads), **Tier 2** confirms,
+**Tier 3** needs named confirmation (destructive), **Tier 4** shows price first
+(billable). Because the server covers **all** DigitalOcean products, tiers are
+assigned generically from the tool's verb, so no per-product map is required.
+Curated maps under [`plugins/digitalocean/policy/`](plugins/digitalocean/policy/)
+(Droplets, Accounts, Networking, Databases, Apps, Insights, Docs) act as precise,
+upstream-synced **overrides** on top of that generic classification.
 
 Skills enforce tiers; [`plugins/digitalocean/hooks/hooks.json`](plugins/digitalocean/hooks/hooks.json)
-can enforce them at MCP execution time (`failClosed: true`). See README hook verification
-in [SECURITY-REVIEW.md](SECURITY-REVIEW.md) for client caveats.
+can enforce them at MCP execution time (`failClosed: true`): it unwraps the
+`invoke_tool` target, applies an override if present, otherwise classifies by
+verb, and returns **ask** for anything that is not a plain read. See
+[SECURITY-REVIEW.md](SECURITY-REVIEW.md) for client caveats.
 
 ```bash
 make tier-drift   # compare policy JSON to upstream mcp-digitalocean annotations
