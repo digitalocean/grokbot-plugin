@@ -1,7 +1,12 @@
-"""Unit checks for agent-plugins-aligned skill layout (no LLM)."""
+"""Unit checks for the Agent Plugins layout (no LLM).
+
+The repo is a single Agent Plugin at the root: `plugin.json` + `mcp.json` +
+`skills/`. See https://agent-plugins.org/ and the Agent Plugins schemas.
+"""
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -10,9 +15,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / "skills"
-PLUGIN_DIR = ROOT / "plugins/digitalocean"
-PLUGIN_SKILLS = PLUGIN_DIR / "skills"
-# Single hosted DigitalOcean MCP endpoint (see plugins/digitalocean/mcp.json and
+# Single hosted DigitalOcean MCP endpoint (see mcp.json and
 # https://docs.digitalocean.com/reference/mcp/configure-mcp/).
 DO_MCP_URL = "https://mcp.digitalocean.com/mcp"
 MCP_URLS = {DO_MCP_URL}
@@ -24,8 +27,7 @@ def _skill_names() -> list[str]:
 
 @pytest.mark.parametrize("name", _skill_names())
 def test_skill_frontmatter_matches_directory(name: str) -> None:
-    skill_md = SKILLS / name / "SKILL.md"
-    text = skill_md.read_text(encoding="utf-8")
+    text = (SKILLS / name / "SKILL.md").read_text(encoding="utf-8")
     assert text.startswith("---\n")
     end = text.index("\n---\n", 4)
     front = yaml.safe_load(text[4:end])
@@ -51,62 +53,7 @@ def test_metadata_present(name: str) -> None:
         assert ep in MCP_URLS or ep == "", f"unexpected endpoint {ep} in {name}"
 
 
-@pytest.mark.parametrize("name", _skill_names())
-def test_plugin_skill_is_copy_not_symlink(name: str) -> None:
-    dest = PLUGIN_SKILLS / name
-    assert dest.is_dir(), f"missing plugin skill dir {dest}"
-    assert not dest.is_symlink(), f"plugin skill must be a copy, not symlink: {dest}"
-    canonical = (SKILLS / name / "SKILL.md").read_text(encoding="utf-8")
-    bundled = (dest / "SKILL.md").read_text(encoding="utf-8")
-    assert canonical == bundled
-
-
-def test_mcp_json_uses_single_server() -> None:
-    import json
-
-    mcp = json.loads((PLUGIN_DIR / "mcp.json").read_text())
-    assert list(mcp["mcpServers"].keys()) == ["digitalocean"]
-    urls = {s["url"] for s in mcp["mcpServers"].values()}
-    assert urls == {DO_MCP_URL}
-
-
-def test_docs_policy_is_read_only_tier1() -> None:
-    import json
-
-    policy_path = PLUGIN_DIR / "policy/approval-tiers-docs.json"
-    policy = json.loads(policy_path.read_text(encoding="utf-8"))
-    assert policy["mcpServer"] == "digitalocean-docs"
-    assert policy["tools"], "docs policy must list every docs tool"
-    for row in policy["tools"]:
-        assert row["upstreamReadOnly"] is True
-        assert row["proposedTier"] == 1
-        assert row["upstreamDestructive"] is False
-
-
-def test_insights_policy_covers_monitoring_writes() -> None:
-    import json
-
-    policy_path = PLUGIN_DIR / "policy/approval-tiers-insights.json"
-    policy = json.loads(policy_path.read_text(encoding="utf-8"))
-    names = {row["tool"] for row in policy["tools"]}
-    assert "uptimecheck-create" in names
-    assert "alert-policy-create" in names
-    assert "uptimecheck-delete" in names
-
-
-def test_cursor_plugin_manifest_public_id() -> None:
-    import json
-
-    manifest = json.loads((PLUGIN_DIR / ".cursor-plugin/plugin.json").read_text(encoding="utf-8"))
-    assert manifest["name"] == "digitalocean"
-    assert manifest["displayName"] == "DigitalOcean"
-    assert manifest["logo"] == "assets/logo.png"
-    assert ".." not in manifest["logo"]
-
-
-def test_agent_plugin_root_manifest_conformance() -> None:
-    import json
-
+def test_agent_plugin_manifest_conformance() -> None:
     # Agent Plugins manifest schema (additionalProperties: false) allows only:
     allowed = {
         "$schema",
@@ -120,42 +67,18 @@ def test_agent_plugin_root_manifest_conformance() -> None:
         "keywords",
         "extensions",
     }
-    manifest = json.loads((PLUGIN_DIR / "plugin.json").read_text(encoding="utf-8"))
+    manifest = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     assert manifest["$schema"] == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
     assert manifest["name"] == "digitalocean"
     unexpected = set(manifest) - allowed
     assert not unexpected, f"disallowed Agent Plugin manifest keys: {sorted(unexpected)}"
 
 
-def test_mcp_json_declares_streamable_http_transport() -> None:
-    import json
-
-    mcp = json.loads((PLUGIN_DIR / "mcp.json").read_text(encoding="utf-8"))
+def test_mcp_json_single_streamable_http_server() -> None:
+    mcp = json.loads((ROOT / "mcp.json").read_text(encoding="utf-8"))
+    assert list(mcp["mcpServers"].keys()) == ["digitalocean"]
     server = mcp["mcpServers"]["digitalocean"]
     assert server["type"] == "streamable-http"
     assert server["url"] == DO_MCP_URL
     # streamableHttpServer schema: additionalProperties false, only type/url/headers
     assert set(server) <= {"type", "url", "headers"}
-
-
-def test_hooks_json_uses_plugin_format() -> None:
-    import json
-
-    hooks = json.loads((PLUGIN_DIR / "hooks/hooks.json").read_text(encoding="utf-8"))
-    # Plugin hook format is { "hooks": { <event>: [...] } } with no top-level version.
-    assert "version" not in hooks
-    assert "beforeMCPExecution" in hooks["hooks"]
-
-
-def test_marketplace_manifest_unique_names() -> None:
-    import json
-
-    market = json.loads((ROOT / ".cursor-plugin/marketplace.json").read_text())
-    names = [p["name"] for p in market["plugins"]]
-    assert len(names) == len(set(names))
-    assert market["name"] == "digitalocean"
-    assert names == ["digitalocean"]
-    for entry in market["plugins"]:
-        for key, value in entry.items():
-            if isinstance(value, str) and ".." in value:
-                pytest.fail(f"parent path in marketplace entry {key}: {value}")

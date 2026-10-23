@@ -1,7 +1,7 @@
 [project]
 name = "digitalocean-grokbot-plugin"
-version = "1.1.0"
-description = "Dev tooling for the DigitalOcean Cursor plugin (agent-plugins-aligned)."
+version = "1.2.0"
+description = "Dev tooling for the DigitalOcean Agent Plugin (skills + MCP)."
 requires-python = ">=3.11"
 dependencies = [
     "mdformat>=0.7.17",
@@ -27,26 +27,19 @@ dev = [
     "pyyaml>=6.0.0",
 ]
 
-# Integration evals under skills/*/evals/ expect skill-tools from digitalocean/agent-skills.
-# Install inside agent-plugins (or with GHE access): uv sync there, then make evals.
-
 [tool.pytest.ini_options]
 testpaths = ["tests", "skills"]
 pythonpath = ["."]
-markers = [
-    "integration: calls inference target and external judge APIs (needs MODEL_ACCESS_KEY)",
-]
 
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-src = ["tools", "scripts", "tests", "skills"]
+src = ["tools", "tests", "skills"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "PTH"]
 
 [tool.ruff.lint.per-file-ignores]
-"skills/**/evals/*.py" = ["E402"]
 "tools/format_markdown.py" = ["SIM108"]
 
 [tool.ruff.format]

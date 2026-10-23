@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Simplified to a pure **Agent Plugins** package: flattened the plugin to the repo root (`plugin.json` + `mcp.json` + `skills/`).
+- Removed Cursor-specific packaging and ceremony: `.cursor-plugin/` (marketplace + manifest), the `beforeMCPExecution` hook and its tier-policy library, the per-service `policy/*.json` maps and their generators, and the smoke/eval fixtures. Approval tiers are now carried by the `digitalocean-safety` skill.
+
 ## 1.2.0
 
 - Switch to the single hosted **DigitalOcean MCP** server (`mcp.digitalocean.com/mcp`); replaces the seven per-service connectors with one OAuth sign-in.

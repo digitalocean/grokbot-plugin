@@ -31,6 +31,3 @@ jobs:
 
       - name: make test
         run: make test
-
-      - name: Tier map drift check
-        run: make tier-drift

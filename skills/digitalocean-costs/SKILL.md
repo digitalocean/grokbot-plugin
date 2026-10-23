@@ -25,7 +25,7 @@ for size/region pricing.
 1. Compute or quote **hourly and monthly** for the chosen plan/size and quantity.
 1. State that **billing starts immediately** on create/resize/backup enable/snapshot.
 1. Only after explicit user confirmation, invoke the Tier 4 tool (see
-   `policy/approval-tiers-droplets.json`).
+   **digitalocean-safety**).
 
 ## Invoices and balance
 
