@@ -15,7 +15,7 @@ for **DigitalOcean**: `plugin.json` + `mcp.json` + `skills/`.
 ## Conventions
 
 - Each skill dir has a `SKILL.md` whose frontmatter `name` matches the directory.
-- `METADATA.yml` records `maintainer`, `tier`, and `declared_endpoints` (the MCP
-  URL above).
+- `METADATA.yml` records `tier` and `declared_endpoints` (the MCP URL above).
+  Repository ownership is in [`CODEOWNERS`](CODEOWNERS).
 - Approval tiers live in the **digitalocean-safety** skill and are referenced by
   the other skills.
